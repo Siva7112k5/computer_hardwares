@@ -420,12 +420,17 @@ def edit_product(product_id):
     if request.method == 'POST':
         product.name = request.form.get('name')
         product.category = request.form.get('category')
-        product.brand = request.form.get('brand')
-        product.description = request.form.get('description')
-        product.specifications = request.form.get('specifications')
-        product.warranty = request.form.get('warranty')
+        product.brand = request.form.get('brand')  # Make sure this is not empty
+        product.description = request.form.get('description', '')
+        product.specifications = request.form.get('specifications', '')
+        product.warranty = request.form.get('warranty', '')
         product.featured = request.form.get('featured') == 'on'
         product.discount = int(request.form.get('discount', 0))
+        
+        # Validate required fields
+        if not product.brand:
+            flash('Brand is required!', 'danger')
+            return redirect(url_for('edit_product', product_id=product.id))
         
         # Handle image upload
         image = request.files.get('image')

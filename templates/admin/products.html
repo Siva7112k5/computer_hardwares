@@ -44,7 +44,7 @@
                         <th>Name</th>
                         <th>Category</th>
                         <th>Price Range</th>
-                        <th>Veg</th>
+                        
                         <th>Featured</th>
                         <th>Discount</th>
                         <th>Actions</th>
@@ -68,13 +68,7 @@
                                 ₹{{ product.weights|map(attribute='price')|min }} - ₹{{ product.weights|map(attribute='price')|max }}
                             {% endif %}
                         </td>
-                        <td>
-                            {% if product.veg %}
-                            <span class="status-badge status-active">Veg</span>
-                            {% else %}
-                            <span class="status-badge status-inactive">Non-Veg</span>
-                            {% endif %}
-                        </td>
+                     
                         <td>
                             {% if product.featured %}
                             <span class="status-badge status-active">Yes</span>

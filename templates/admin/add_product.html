@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Add Product - Admin{% endblock %}
+{% block title %}Add Product - HardwareHub Admin{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
@@ -21,7 +21,7 @@
         <form class="admin-form" method="POST" enctype="multipart/form-data">
             <div class="admin-form-group">
                 <label for="name">Product Name *</label>
-                <input type="text" id="name" name="name" required>
+                <input type="text" id="name" name="name" required placeholder="e.g., Intel Core i9-13900K">
             </div>
             
             <div class="admin-form-row">
@@ -29,11 +29,40 @@
                     <label for="category">Category *</label>
                     <select id="category" name="category" required>
                         <option value="">Select Category</option>
-                        <option value="sweets">Sweets</option>
-                        <option value="cookies">Cookies</option>
-                        <option value="cakes">Cakes</option>
-                        <option value="other">Other</option>
+                        <option value="CPU">Processors (CPU)</option>
+                        <option value="GPU">Graphics Cards (GPU)</option>
+                        <option value="RAM">Memory (RAM)</option>
+                        <option value="Storage">Storage</option>
+                        <option value="Motherboard">Motherboard</option>
+                        <option value="PSU">Power Supply</option>
+                        <option value="Cooling">Cooling</option>
+                        <option value="Other">Other</option>
                     </select>
+                </div>
+                
+                <div class="admin-form-group">
+                    <label for="brand">Brand *</label>
+                    <select id="brand" name="brand" required>
+                        <option value="">Select Brand</option>
+                        <option value="Intel">Intel</option>
+                        <option value="AMD">AMD</option>
+                        <option value="NVIDIA">NVIDIA</option>
+                        <option value="ASUS">ASUS</option>
+                        <option value="MSI">MSI</option>
+                        <option value="Gigabyte">Gigabyte</option>
+                        <option value="Corsair">Corsair</option>
+                        <option value="Samsung">Samsung</option>
+                        <option value="Western Digital">Western Digital</option>
+                        <option value="Seagate">Seagate</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="admin-form-row">
+                <div class="admin-form-group">
+                    <label for="warranty">Warranty</label>
+                    <input type="text" id="warranty" name="warranty" placeholder="e.g., 3 Years">
                 </div>
                 
                 <div class="admin-form-group">
@@ -44,19 +73,24 @@
             
             <div class="admin-form-group">
                 <label for="description">Description</label>
-                <textarea id="description" name="description" rows="4"></textarea>
+                <textarea id="description" name="description" rows="3" placeholder="Brief product description..."></textarea>
+            </div>
+            
+            <div class="admin-form-group">
+                <label for="specifications">Technical Specifications</label>
+                <textarea id="specifications" name="specifications" rows="4" placeholder="Enter detailed specifications..."></textarea>
             </div>
             
             <div class="admin-form-row">
                 <div class="admin-form-group">
                     <label>
-                        <input type="checkbox" name="veg" checked> Veg
+                        <input type="checkbox" name="featured"> Featured Product
                     </label>
                 </div>
                 
                 <div class="admin-form-group">
                     <label>
-                        <input type="checkbox" name="featured"> Featured Product
+                        <input type="checkbox" name="in_stock" checked> In Stock
                     </label>
                 </div>
             </div>
@@ -75,16 +109,16 @@
             </div>
             
             <div class="admin-form-group">
-                <label>Weight Options *</label>
-                <div id="weightOptions">
-                    <div class="weight-option-row">
-                        <input type="text" name="weight[]" placeholder="e.g., 250g" required>
-                        <input type="number" name="price[]" placeholder="Price (₹)" required>
-                        <i class="fas fa-times remove-weight" onclick="this.parentElement.remove()"></i>
+                <label>Product Variants (Size/Capacity with Price) *</label>
+                <div id="variantsContainer">
+                    <div class="variant-row">
+                        <input type="text" name="variant_name[]" placeholder="e.g., 16GB, 1TB, 500W" required>
+                        <input type="number" name="variant_price[]" placeholder="Price (₹)" required>
+                        <i class="fas fa-times remove-variant" onclick="this.parentElement.remove()"></i>
                     </div>
                 </div>
-                <button type="button" class="add-weight-btn" onclick="addWeightOption()">
-                    <i class="fas fa-plus"></i> Add Weight Option
+                <button type="button" class="add-variant-btn" onclick="addVariant()">
+                    <i class="fas fa-plus"></i> Add Variant
                 </button>
             </div>
             
@@ -101,14 +135,14 @@
 </div>
 
 <script>
-    function addWeightOption() {
-        const container = document.getElementById('weightOptions');
+    function addVariant() {
+        const container = document.getElementById('variantsContainer');
         const newRow = document.createElement('div');
-        newRow.className = 'weight-option-row';
+        newRow.className = 'variant-row';
         newRow.innerHTML = `
-            <input type="text" name="weight[]" placeholder="e.g., 250g" required>
-            <input type="number" name="price[]" placeholder="Price (₹)" required>
-            <i class="fas fa-times remove-weight" onclick="this.parentElement.remove()"></i>
+            <input type="text" name="variant_name[]" placeholder="e.g., 16GB, 1TB, 500W" required>
+            <input type="number" name="variant_price[]" placeholder="Price (₹)" required>
+            <i class="fas fa-times remove-variant" onclick="this.parentElement.remove()"></i>
         `;
         container.appendChild(newRow);
     }

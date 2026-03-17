@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Edit Product - Admin{% endblock %}
+{% block title %}Edit Product - HardwareHub Admin{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
@@ -28,34 +28,69 @@
                 <div class="admin-form-group">
                     <label for="category">Category *</label>
                     <select id="category" name="category" required>
-                        <option value="sweets" {% if product.category == 'sweets' %}selected{% endif %}>Sweets</option>
-                        <option value="cookies" {% if product.category == 'cookies' %}selected{% endif %}>Cookies</option>
-                        <option value="cakes" {% if product.category == 'cakes' %}selected{% endif %}>Cakes</option>
-                        <option value="other" {% if product.category == 'other' %}selected{% endif %}>Other</option>
+                        <option value="">Select Category</option>
+                        <option value="CPU" {% if product.category == 'CPU' %}selected{% endif %}>Processors (CPU)</option>
+                        <option value="GPU" {% if product.category == 'GPU' %}selected{% endif %}>Graphics Cards (GPU)</option>
+                        <option value="RAM" {% if product.category == 'RAM' %}selected{% endif %}>Memory (RAM)</option>
+                        <option value="Storage" {% if product.category == 'Storage' %}selected{% endif %}>Storage</option>
+                        <option value="Motherboard" {% if product.category == 'Motherboard' %}selected{% endif %}>Motherboard</option>
+                        <option value="PSU" {% if product.category == 'PSU' %}selected{% endif %}>Power Supply</option>
+                        <option value="Cooling" {% if product.category == 'Cooling' %}selected{% endif %}>Cooling</option>
+                        <option value="Other" {% if product.category == 'Other' %}selected{% endif %}>Other</option>
                     </select>
                 </div>
                 
                 <div class="admin-form-group">
+                    <label for="brand">Brand *</label>
+                    <select id="brand" name="brand" required>
+                        <option value="">Select Brand</option>
+                        <option value="Intel" {% if product.brand == 'Intel' %}selected{% endif %}>Intel</option>
+                        <option value="AMD" {% if product.brand == 'AMD' %}selected{% endif %}>AMD</option>
+                        <option value="NVIDIA" {% if product.brand == 'NVIDIA' %}selected{% endif %}>NVIDIA</option>
+                        <option value="ASUS" {% if product.brand == 'ASUS' %}selected{% endif %}>ASUS</option>
+                        <option value="MSI" {% if product.brand == 'MSI' %}selected{% endif %}>MSI</option>
+                        <option value="Gigabyte" {% if product.brand == 'Gigabyte' %}selected{% endif %}>Gigabyte</option>
+                        <option value="Corsair" {% if product.brand == 'Corsair' %}selected{% endif %}>Corsair</option>
+                        <option value="Samsung" {% if product.brand == 'Samsung' %}selected{% endif %}>Samsung</option>
+                        <option value="Western Digital" {% if product.brand == 'Western Digital' %}selected{% endif %}>Western Digital</option>
+                        <option value="Seagate" {% if product.brand == 'Seagate' %}selected{% endif %}>Seagate</option>
+                        <option value="Other" {% if product.brand == 'Other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="admin-form-row">
+                <div class="admin-form-group">
+                    <label for="warranty">Warranty</label>
+                    <input type="text" id="warranty" name="warranty" value="{{ product.warranty or '' }}" placeholder="e.g., 3 Years">
+                </div>
+                
+                <div class="admin-form-group">
                     <label for="discount">Discount (%)</label>
-                    <input type="number" id="discount" name="discount" min="0" max="100" value="{{ product.discount }}">
+                    <input type="number" id="discount" name="discount" min="0" max="100" value="{{ product.discount or 0 }}">
                 </div>
             </div>
             
             <div class="admin-form-group">
                 <label for="description">Description</label>
-                <textarea id="description" name="description" rows="4">{{ product.description }}</textarea>
+                <textarea id="description" name="description" rows="3">{{ product.description or '' }}</textarea>
+            </div>
+            
+            <div class="admin-form-group">
+                <label for="specifications">Technical Specifications</label>
+                <textarea id="specifications" name="specifications" rows="4" placeholder="Enter detailed specifications...">{{ product.specifications or '' }}</textarea>
             </div>
             
             <div class="admin-form-row">
                 <div class="admin-form-group">
                     <label>
-                        <input type="checkbox" name="veg" {% if product.veg %}checked{% endif %}> Veg
+                        <input type="checkbox" name="featured" {% if product.featured %}checked{% endif %}> Featured Product
                     </label>
                 </div>
                 
                 <div class="admin-form-group">
                     <label>
-                        <input type="checkbox" name="featured" {% if product.featured %}checked{% endif %}> Featured Product
+                        <input type="checkbox" name="in_stock" {% if product.in_stock %}checked{% endif %}> In Stock
                     </label>
                 </div>
             </div>
@@ -71,7 +106,7 @@
                 {% if product.image %}
                 <div class="image-preview" id="imagePreview" style="display: block;">
                     <img src="{{ url_for('static', filename='img/products/' + product.image) }}" alt="Current Image">
-                    <p style="font-size: 0.8rem; color: #7f8c8d;">Current Image</p>
+                    <p style="font-size: 0.8rem; color: #7f8c8d; margin-top: 0.5rem;">Current Image</p>
                 </div>
                 {% else %}
                 <div class="image-preview" id="imagePreview">
@@ -81,18 +116,18 @@
             </div>
             
             <div class="admin-form-group">
-                <label>Weight Options *</label>
-                <div id="weightOptions">
-                    {% for weight in product.weights %}
-                    <div class="weight-option-row">
-                        <input type="text" name="weight[]" value="{{ weight.weight }}" required>
-                        <input type="number" name="price[]" value="{{ weight.price }}" required>
-                        <i class="fas fa-times remove-weight" onclick="this.parentElement.remove()"></i>
+                <label>Product Variants (Size/Capacity with Price) *</label>
+                <div id="variantsContainer">
+                    {% for variant in product.variants %}
+                    <div class="variant-row">
+                        <input type="text" name="variant_name[]" value="{{ variant.name }}" placeholder="e.g., 16GB, 1TB, 500W" required>
+                        <input type="number" name="variant_price[]" value="{{ variant.price }}" placeholder="Price (₹)" required>
+                        <i class="fas fa-times remove-variant" onclick="this.parentElement.remove()"></i>
                     </div>
                     {% endfor %}
                 </div>
-                <button type="button" class="add-weight-btn" onclick="addWeightOption()">
-                    <i class="fas fa-plus"></i> Add Weight Option
+                <button type="button" class="add-variant-btn" onclick="addVariant()">
+                    <i class="fas fa-plus"></i> Add Variant
                 </button>
             </div>
             
@@ -109,14 +144,14 @@
 </div>
 
 <script>
-    function addWeightOption() {
-        const container = document.getElementById('weightOptions');
+    function addVariant() {
+        const container = document.getElementById('variantsContainer');
         const newRow = document.createElement('div');
-        newRow.className = 'weight-option-row';
+        newRow.className = 'variant-row';
         newRow.innerHTML = `
-            <input type="text" name="weight[]" placeholder="e.g., 250g" required>
-            <input type="number" name="price[]" placeholder="Price (₹)" required>
-            <i class="fas fa-times remove-weight" onclick="this.parentElement.remove()"></i>
+            <input type="text" name="variant_name[]" placeholder="e.g., 16GB, 1TB, 500W" required>
+            <input type="number" name="variant_price[]" placeholder="Price (₹)" required>
+            <i class="fas fa-times remove-variant" onclick="this.parentElement.remove()"></i>
         `;
         container.appendChild(newRow);
     }
@@ -137,4 +172,45 @@
         }
     }
 </script>
+
+<style>
+    .variant-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        align-items: center;
+        background: var(--admin-light);
+        padding: 1rem;
+        border-radius: 5px;
+    }
+    
+    .remove-variant {
+        color: var(--admin-danger);
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: var(--transition);
+    }
+    
+    .remove-variant:hover {
+        transform: scale(1.2);
+    }
+    
+    .add-variant-btn {
+        background: none;
+        border: 2px dashed var(--admin-primary);
+        padding: 1rem;
+        width: 100%;
+        border-radius: 5px;
+        cursor: pointer;
+        color: var(--admin-primary);
+        transition: var(--transition);
+        margin-top: 0.5rem;
+    }
+    
+    .add-variant-btn:hover {
+        background: rgba(0,102,204,0.05);
+        border-style: solid;
+    }
+</style>
 {% endblock %}

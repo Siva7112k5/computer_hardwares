@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Order Confirmation - SweetDelight{% endblock %}
+{% block title %}Order Confirmation - HardwareHub{% endblock %}
 
 {% block content %}
 <section class="confirmation-section">
@@ -11,13 +11,13 @@
             </div>
             
             <h1>Order Confirmed!</h1>
-            <p class="confirmation-message">Thank you for your order. Your sweets will be delivered soon!</p>
+            <p class="confirmation-message">Thank you for your order. Your hardware will be delivered soon!</p>
             
             <div class="order-details-card" id="orderDetails">
                 <h3>Order Details</h3>
                 <div class="detail-row">
                     <span>Order Number:</span>
-                    <span class="order-id" id="orderNumber">SWT12345678</span>
+                    <span class="order-id" id="orderNumber">ORD12345678</span>
                 </div>
                 <div class="detail-row">
                     <span>Name:</span>
@@ -26,6 +26,10 @@
                 <div class="detail-row">
                     <span>Phone:</span>
                     <span id="confirmPhone">-</span>
+                </div>
+                <div class="detail-row">
+                    <span>Email:</span>
+                    <span id="confirmEmail">-</span>
                 </div>
                 <div class="detail-row">
                     <span>Address:</span>
@@ -49,13 +53,13 @@
             </div>
             
             <div class="confirmation-actions">
-                <a href="{{ url_for('menu') }}" class="btn btn-primary">Order More</a>
+                <a href="{{ url_for('products') }}" class="btn btn-primary">Continue Shopping</a>
                 <a href="{{ url_for('orders') }}" class="btn btn-secondary">View Orders</a>
             </div>
             
             <p class="delivery-note">
-                <i class="fas fa-clock"></i>
-                Estimated delivery: 45-60 minutes
+                <i class="fas fa-truck"></i>
+                Estimated delivery: 3-5 business days
             </p>
         </div>
     </div>
@@ -72,27 +76,233 @@
         }
         
         // Set order details
-        document.getElementById('orderNumber').textContent = lastOrder.orderNumber;
-        document.getElementById('confirmName').textContent = lastOrder.fullName;
-        document.getElementById('confirmPhone').textContent = lastOrder.phoneNumber;
-        document.getElementById('confirmAddress').textContent = lastOrder.address;
-        document.getElementById('confirmPayment').textContent = lastOrder.paymentMethod;
-        document.getElementById('confirmTotal').textContent = `₹${lastOrder.total}`;
+        document.getElementById('orderNumber').textContent = lastOrder.orderNumber || 'ORD' + Date.now();
+        document.getElementById('confirmName').textContent = lastOrder.fullName || '';
+        document.getElementById('confirmPhone').textContent = lastOrder.phoneNumber || '';
+        document.getElementById('confirmEmail').textContent = lastOrder.email || '';
+        document.getElementById('confirmAddress').textContent = lastOrder.address || '';
+        document.getElementById('confirmPayment').textContent = lastOrder.paymentMethod || '';
+        document.getElementById('confirmTotal').textContent = `₹${lastOrder.total || 0}`;
         
         // Display ordered items
         const itemsList = document.getElementById('itemsList');
-        if (itemsList && lastOrder.items) {
+        if (itemsList && lastOrder.items && lastOrder.items.length > 0) {
             let itemsHTML = '';
             lastOrder.items.forEach(item => {
                 itemsHTML += `
                     <div class="order-item">
-                        <span>${item.name} x${item.quantity} ${item.weightText ? '(' + item.weightText + ')' : ''}</span>
+                        <span>${item.name || item.product_name} x${item.quantity} ${item.variantName ? '(' + item.variantName + ')' : ''}</span>
                         <span>₹${item.price * item.quantity}</span>
                     </div>
                 `;
             });
             itemsList.innerHTML = itemsHTML;
+        } else {
+            itemsList.innerHTML = '<p class="no-items">No items found</p>';
         }
     });
 </script>
+
+<style>
+    .confirmation-section {
+        padding: 120px 0 80px;
+        background: var(--light-bg);
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+    }
+    
+    .confirmation-box {
+        background: white;
+        border-radius: 10px;
+        padding: 3rem;
+        max-width: 600px;
+        margin: 0 auto;
+        box-shadow: var(--shadow);
+        text-align: center;
+        animation: fadeInUp 0.5s ease;
+    }
+    
+    .success-icon {
+        font-size: 5rem;
+        color: var(--success-green);
+        margin-bottom: 1rem;
+        animation: scaleIn 0.5s ease;
+    }
+    
+    @keyframes scaleIn {
+        from { transform: scale(0); }
+        to { transform: scale(1); }
+    }
+    
+    .confirmation-box h1 {
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+    }
+    
+    .confirmation-message {
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+    }
+    
+    .order-details-card {
+        background: #F9FAFB;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        text-align: left;
+        border: 1px solid #E5E7EB;
+    }
+    
+    .order-details-card h3 {
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary-blue);
+        font-size: 1.2rem;
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 0.8rem 0;
+        color: var(--text-secondary);
+        padding: 0.3rem 0;
+    }
+    
+    .detail-row.total-row {
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 1.2rem;
+        border-top: 1px solid #E5E7EB;
+        padding-top: 0.8rem;
+        margin-top: 0.8rem;
+    }
+    
+    .order-id {
+        color: var(--primary-blue);
+        font-weight: 600;
+    }
+    
+    .ordered-items {
+        margin: 2rem 0;
+        text-align: left;
+    }
+    
+    .ordered-items h3 {
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+    }
+    
+    .items-list {
+        max-height: 200px;
+        overflow-y: auto;
+        background: #F9FAFB;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #E5E7EB;
+    }
+    
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #E5E7EB;
+        color: var(--text-secondary);
+    }
+    
+    .order-item:last-child {
+        border-bottom: none;
+    }
+    
+    .order-item span:first-child {
+        font-weight: 500;
+    }
+    
+    .order-item span:last-child {
+        color: var(--primary-blue);
+        font-weight: 600;
+    }
+    
+    .no-items {
+        text-align: center;
+        color: var(--text-secondary);
+        padding: 1rem;
+    }
+    
+    .confirmation-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin: 2rem 0 1rem;
+    }
+    
+    .btn {
+        padding: 0.8rem 2rem;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    
+    .btn-primary {
+        background: var(--primary-blue);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: var(--secondary-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,102,204,0.3);
+    }
+    
+    .btn-secondary {
+        background: white;
+        color: var(--primary-blue);
+        border: 2px solid var(--primary-blue);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--primary-blue);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .delivery-note {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #E5E7EB;
+    }
+    
+    .delivery-note i {
+        color: var(--primary-blue);
+    }
+    
+    @media (max-width: 768px) {
+        .confirmation-box {
+            padding: 2rem 1.5rem;
+        }
+        
+        .confirmation-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+            text-align: center;
+        }
+        
+        .detail-row {
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+    }
+</style>
 {% endblock %}
