@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}Computer Components - HardwareHub{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1>Computer Components</h1>
+        <p>Browse our extensive collection of premium PC hardware</p>
+    </div>
+</section>
+
+<section class="product-filters">
+    <div class="container">
+        <div class="filter-section">
+            <div class="filter-group">
+                <h4>Category</h4>
+                <select id="categoryFilter" onchange="applyFilters()">
+                    <option value="all">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}" {% if category == selected_category %}selected{% endif %}>{{ category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <h4>Brand</h4>
+                <select id="brandFilter" onchange="applyFilters()">
+                    <option value="all">All Brands</option>
+                    {% for brand in brands %}
+                    <option value="{{ brand }}" {% if brand == selected_brand %}selected{% endif %}>{{ brand }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <h4>Price Range</h4>
+                <div class="price-inputs">
+                    <input type="number" id="minPrice" placeholder="Min" min="0" value="{{ request.args.get('min_price', '') }}">
+                    <span>-</span>
+                    <input type="number" id="maxPrice" placeholder="Max" value="{{ request.args.get('max_price', '') }}">
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+            <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+        </div>
+    </div>
+</section>
+
+<section class="products-grid">
+    <div class="container">
+        <div class="product-grid">
+            {% if products %}
+                {% for product in products %}
+                <div class="product-card" data-id="{{ product.id }}">
+                    <div class="product-image">
+                        <img src="{{ url_for('static', filename='img/products/' + product.image) if product.image else 'https://via.placeholder.com/300x200?text=HardwareHub' }}" alt="{{ product.name }}">
+                        {% if product.discount > 0 %}
+                        <span class="discount-badge">{{ product.discount }}% OFF</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <h3>{{ product.name }}</h3>
+                        <p class="product-brand">{{ product.brand }}</p>
+                        <p class="product-specs">{{ product.specifications[:100] if product.specifications else product.description[:100] }}...</p>
+                        <div class="product-footer">
+                            <div class="price-section">
+                                {% if product.variants %}
+                                <span class="price">₹{{ product.variants[0].price }}</span>
+                                <span class="variant-count">{{ product.variants|length }} variants</span>
+                                {% endif %}
+                            </div>
+                            <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-small">View Details</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="no-products">No products found matching your criteria.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function applyFilters() {
+        const category = document.getElementById('categoryFilter').value;
+        const brand = document.getElementById('brandFilter').value;
+        const minPrice = document.getElementById('minPrice').value;
+        const maxPrice = document.getElementById('maxPrice').value;
+        
+        let url = "{{ url_for('products') }}?";
+        if (category !== 'all') url += `category=${encodeURIComponent(category)}&`;
+        if (brand !== 'all') url += `brand=${encodeURIComponent(brand)}&`;
+        if (minPrice) url += `min_price=${minPrice}&`;
+        if (maxPrice) url += `max_price=${maxPrice}`;
+        
+        // Remove trailing & if present
+        if (url.endsWith('&')) {
+            url = url.slice(0, -1);
+        }
+        
+        window.location.href = url;
+    }
+    
+    function resetFilters() {
+        window.location.href = "{{ url_for('products') }}";
+    }
+    
+    // Set initial filter values from URL
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        const category = urlParams.get('category');
+        const brand = urlParams.get('brand');
+        const minPrice = urlParams.get('min_price');
+        const maxPrice = urlParams.get('max_price');
+        
+        if (category) {
+            document.getElementById('categoryFilter').value = category;
+        }
+        if (brand) {
+            document.getElementById('brandFilter').value = brand;
+        }
+        if (minPrice) {
+            document.getElementById('minPrice').value = minPrice;
+        }
+        if (maxPrice) {
+            document.getElementById('maxPrice').value = maxPrice;
+        }
+    });
+</script>
+
+<style>
+    .product-filters {
+        padding: 2rem 0;
+        background: white;
+        box-shadow: var(--shadow);
+        margin-bottom: 2rem;
+        position: sticky;
+        top: 70px;
+        z-index: 100;
+    }
+    
+    .filter-section {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+    
+    .filter-group {
+        flex: 1;
+        min-width: 150px;
+    }
+    
+    .filter-group h4 {
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    
+    .filter-group select,
+    .filter-group input {
+        width: 100%;
+        padding: 0.7rem 1rem;
+        border: 2px solid #E5E7EB;
+        border-radius: 5px;
+        font-size: 0.95rem;
+        transition: var(--transition);
+    }
+    
+    .filter-group select:focus,
+    .filter-group input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+    }
+    
+    .price-inputs {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .price-inputs input {
+        width: 100px;
+    }
+    
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0 4rem;
+    }
+    
+    .product-card {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        border: 1px solid #E5E7EB;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+        border-color: var(--primary-blue);
+    }
+    
+    .product-image {
+        height: 200px;
+        overflow: hidden;
+        background: #F9FAFB;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .product-image img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        transition: var(--transition);
+    }
+    
+    .product-card:hover .product-image img {
+        transform: scale(1.05);
+    }
+    
+    .discount-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: var(--danger-red);
+        color: white;
+        padding: 0.3rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        z-index: 2;
+    }
+    
+    .product-info {
+        padding: 1.5rem;
+    }
+    
+    .product-info h3 {
+        font-size: 1rem;
+        margin-bottom: 0.3rem;
+        color: var(--text-primary);
+        font-weight: 600;
+        line-height: 1.4;
+    }
+    
+    .product-brand {
+        color: var(--primary-blue);
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+    
+    .product-specs {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .product-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #E5E7EB;
+    }
+    
+    .price-section {
+        flex: 1;
+    }
+    
+    .price {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        display: block;
+    }
+    
+    .variant-count {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        display: block;
+        margin-top: 0.2rem;
+    }
+    
+    .no-products {
+        text-align: center;
+        grid-column: 1/-1;
+        padding: 3rem;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .filter-section {
+            flex-direction: column;
+        }
+        
+        .filter-group {
+            width: 100%;
+        }
+        
+        .price-inputs {
+            flex-direction: row;
+        }
+        
+        .price-inputs input {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}

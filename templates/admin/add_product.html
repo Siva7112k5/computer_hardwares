@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Add Product - Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    {% include 'admin/sidebar.html' %}
+    
+    <main class="admin-main">
+        <div class="admin-top-bar">
+            <h2>Add New Product</h2>
+            <a href="{{ url_for('admin_products') }}" class="admin-btn admin-btn-primary">
+                <i class="fas fa-arrow-left"></i> Back to Products
+            </a>
+        </div>
+        
+        <form class="admin-form" method="POST" enctype="multipart/form-data">
+            <div class="admin-form-group">
+                <label for="name">Product Name *</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="admin-form-row">
+                <div class="admin-form-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select Category</option>
+                        <option value="sweets">Sweets</option>
+                        <option value="cookies">Cookies</option>
+                        <option value="cakes">Cakes</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="admin-form-group">
+                    <label for="discount">Discount (%)</label>
+                    <input type="number" id="discount" name="discount" min="0" max="100" value="0">
+                </div>
+            </div>
+            
+            <div class="admin-form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="4"></textarea>
+            </div>
+            
+            <div class="admin-form-row">
+                <div class="admin-form-group">
+                    <label>
+                        <input type="checkbox" name="veg" checked> Veg
+                    </label>
+                </div>
+                
+                <div class="admin-form-group">
+                    <label>
+                        <input type="checkbox" name="featured"> Featured Product
+                    </label>
+                </div>
+            </div>
+            
+            <div class="admin-form-group">
+                <label>Product Image</label>
+                <div class="image-upload-container" onclick="document.getElementById('imageInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Click to upload product image</p>
+                    <p style="font-size: 0.8rem; color: #7f8c8d;">PNG, JPG, JPEG (Max 16MB)</p>
+                </div>
+                <input type="file" id="imageInput" name="image" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                <div class="image-preview" id="imagePreview">
+                    <img src="" alt="Preview">
+                </div>
+            </div>
+            
+            <div class="admin-form-group">
+                <label>Weight Options *</label>
+                <div id="weightOptions">
+                    <div class="weight-option-row">
+                        <input type="text" name="weight[]" placeholder="e.g., 250g" required>
+                        <input type="number" name="price[]" placeholder="Price (₹)" required>
+                        <i class="fas fa-times remove-weight" onclick="this.parentElement.remove()"></i>
+                    </div>
+                </div>
+                <button type="button" class="add-weight-btn" onclick="addWeightOption()">
+                    <i class="fas fa-plus"></i> Add Weight Option
+                </button>
+            </div>
+            
+            <div class="admin-form-actions">
+                <button type="submit" class="admin-btn admin-btn-success">
+                    <i class="fas fa-save"></i> Save Product
+                </button>
+                <a href="{{ url_for('admin_products') }}" class="admin-btn admin-btn-primary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </main>
+</div>
+
+<script>
+    function addWeightOption() {
+        const container = document.getElementById('weightOptions');
+        const newRow = document.createElement('div');
+        newRow.className = 'weight-option-row';
+        newRow.innerHTML = `
+            <input type="text" name="weight[]" placeholder="e.g., 250g" required>
+            <input type="number" name="price[]" placeholder="Price (₹)" required>
+            <i class="fas fa-times remove-weight" onclick="this.parentElement.remove()"></i>
+        `;
+        container.appendChild(newRow);
+    }
+    
+    function previewImage(input) {
+        const preview = document.getElementById('imagePreview');
+        const previewImg = preview.querySelector('img');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %}

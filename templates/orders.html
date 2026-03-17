@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders - SweetDelight{% endblock %}
+
+{% block content %}
+<section class="orders-section">
+    <div class="container">
+        <h1 class="page-title">My Orders</h1>
+        
+        <div class="orders-filter">
+            <button class="filter-btn active" data-filter="all">All Orders</button>
+            <button class="filter-btn" data-filter="pending">Pending</button>
+            <button class="filter-btn" data-filter="processing">Processing</button>
+            <button class="filter-btn" data-filter="delivered">Delivered</button>
+            <button class="filter-btn" data-filter="cancelled">Cancelled</button>
+        </div>
+        
+        <div class="orders-list" id="ordersList">
+            {% if orders %}
+                {% for order in orders %}
+                <div class="order-card" onclick="viewOrderDetails('{{ order.order_number }}')">
+                    <div class="order-header">
+                        <span class="order-id">{{ order.order_number }}</span>
+                        <span class="order-status status-{{ order.status }}">{{ order.status|upper }}</span>
+                    </div>
+                    <div class="order-date">{{ order.created_at.strftime('%d %b %Y, %I:%M %p') }}</div>
+                    <div class="order-items-preview">
+                        {% for item in order.items[:3] %}
+                        <div>{{ item.product_name }} x{{ item.quantity }}</div>
+                        {% endfor %}
+                        {% if order.items|length > 3 %}
+                        <div>+{{ order.items|length - 3 }} more items</div>
+                        {% endif %}
+                    </div>
+                    <div class="order-total">
+                        <span>Total:</span>
+                        <span>₹{{ order.total }}</span>
+                    </div>
+                    <button class="view-details-btn">View Details</button>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="no-orders">
+                <i class="fas fa-box-open"></i>
+                <h3>No orders yet</h3>
+                <p>Looks like you haven't placed any orders yet.</p>
+                <a href="{{ url_for('menu') }}" class="btn btn-primary">Start Shopping</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Order Details Modal -->
+<div class="modal" id="orderDetailsModal">
+    <div class="modal-content order-details-modal">
+        <div class="modal-header">
+            <h2>Order Details</h2>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body" id="orderDetailsBody">
+            <!-- Order details will be loaded dynamically -->
+        </div>
+    </div>
+</div>
+<script>
+    function viewOrderDetails(orderNumber) {
+        {% if orders %}
+        // Convert orders to JSON-safe dictionaries
+        const orders = [
+            {% for order in orders %}
+            {
+                id: {{ order.id }},
+                order_number: "{{ order.order_number }}",
+                full_name: "{{ order.full_name }}",
+                phone: "{{ order.phone }}",
+                address: "{{ order.address }}",
+                payment_method: "{{ order.payment_method }}",
+                subtotal: {{ order.subtotal }},
+                delivery_fee: {{ order.delivery_fee }},
+                total: {{ order.total }},
+                status: "{{ order.status }}",
+                created_at: "{{ order.created_at.isoformat() if order.created_at else '' }}",
+                items: [
+                    {% for item in order.items %}
+                    {
+                        product_name: "{{ item.product_name }}",
+                        weight: "{{ item.weight or '' }}",
+                        price: {{ item.price }},
+                        quantity: {{ item.quantity }}
+                    }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ]
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        const order = orders.find(o => o.order_number === orderNumber);
+        
+        if (!order) return;
+        
+        const modal = document.getElementById('orderDetailsModal');
+        const modalBody = document.getElementById('orderDetailsBody');
+        
+        const date = new Date(order.created_at).toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        let itemsHTML = '';
+        order.items.forEach(item => {
+            itemsHTML += `
+                <div class="order-item">
+                    <span>${item.product_name} x${item.quantity} ${item.weight ? '(' + item.weight + ')' : ''}</span>
+                    <span>₹${item.price * item.quantity}</span>
+                </div>
+            `;
+        });
+        
+        modalBody.innerHTML = `
+            <div class="order-details">
+                <p><strong>Order Number:</strong> ${order.order_number}</p>
+                <p><strong>Date:</strong> ${date}</p>
+                <p><strong>Name:</strong> ${order.full_name}</p>
+                <p><strong>Phone:</strong> ${order.phone}</p>
+                <p><strong>Address:</strong> ${order.address}</p>
+                <p><strong>Payment Method:</strong> ${order.payment_method}</p>
+                <p><strong>Status:</strong> <span class="order-status status-${order.status}">${order.status.toUpperCase()}</span></p>
+                
+                <h4 style="margin: 1rem 0 0.5rem;">Items:</h4>
+                <div class="items-list" style="max-height: 200px; overflow-y: auto; background: var(--dark-cream); padding: 1rem; border-radius: 8px;">
+                    ${itemsHTML}
+                </div>
+                
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--dark-cream);">
+                    <p><strong>Subtotal:</strong> ₹${order.subtotal}</p>
+                    <p><strong>Delivery Fee:</strong> ₹${order.delivery_fee}</p>
+                    <p style="font-size: 1.2rem; color: var(--primary-chocolate);"><strong>Total:</strong> ₹${order.total}</p>
+                </div>
+            </div>
+        `;
+        
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        {% endif %}
+    }
+</script>
+{% endblock %}

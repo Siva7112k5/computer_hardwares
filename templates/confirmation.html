@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Order Confirmation - SweetDelight{% endblock %}
+
+{% block content %}
+<section class="confirmation-section">
+    <div class="container">
+        <div class="confirmation-box">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            
+            <h1>Order Confirmed!</h1>
+            <p class="confirmation-message">Thank you for your order. Your sweets will be delivered soon!</p>
+            
+            <div class="order-details-card" id="orderDetails">
+                <h3>Order Details</h3>
+                <div class="detail-row">
+                    <span>Order Number:</span>
+                    <span class="order-id" id="orderNumber">SWT12345678</span>
+                </div>
+                <div class="detail-row">
+                    <span>Name:</span>
+                    <span id="confirmName">-</span>
+                </div>
+                <div class="detail-row">
+                    <span>Phone:</span>
+                    <span id="confirmPhone">-</span>
+                </div>
+                <div class="detail-row">
+                    <span>Address:</span>
+                    <span id="confirmAddress">-</span>
+                </div>
+                <div class="detail-row">
+                    <span>Payment Method:</span>
+                    <span id="confirmPayment">-</span>
+                </div>
+                <div class="detail-row total-row">
+                    <span>Total Amount:</span>
+                    <span id="confirmTotal">₹0</span>
+                </div>
+            </div>
+            
+            <div class="ordered-items">
+                <h3>Items Ordered</h3>
+                <div class="items-list" id="itemsList">
+                    <!-- Items will be loaded dynamically -->
+                </div>
+            </div>
+            
+            <div class="confirmation-actions">
+                <a href="{{ url_for('menu') }}" class="btn btn-primary">Order More</a>
+                <a href="{{ url_for('orders') }}" class="btn btn-secondary">View Orders</a>
+            </div>
+            
+            <p class="delivery-note">
+                <i class="fas fa-clock"></i>
+                Estimated delivery: 45-60 minutes
+            </p>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Load confirmation details
+    document.addEventListener('DOMContentLoaded', function() {
+        const lastOrder = JSON.parse(localStorage.getItem('lastOrder'));
+        
+        if (!lastOrder) {
+            window.location.href = "{{ url_for('index') }}";
+            return;
+        }
+        
+        // Set order details
+        document.getElementById('orderNumber').textContent = lastOrder.orderNumber;
+        document.getElementById('confirmName').textContent = lastOrder.fullName;
+        document.getElementById('confirmPhone').textContent = lastOrder.phoneNumber;
+        document.getElementById('confirmAddress').textContent = lastOrder.address;
+        document.getElementById('confirmPayment').textContent = lastOrder.paymentMethod;
+        document.getElementById('confirmTotal').textContent = `₹${lastOrder.total}`;
+        
+        // Display ordered items
+        const itemsList = document.getElementById('itemsList');
+        if (itemsList && lastOrder.items) {
+            let itemsHTML = '';
+            lastOrder.items.forEach(item => {
+                itemsHTML += `
+                    <div class="order-item">
+                        <span>${item.name} x${item.quantity} ${item.weightText ? '(' + item.weightText + ')' : ''}</span>
+                        <span>₹${item.price * item.quantity}</span>
+                    </div>
+                `;
+            });
+            itemsList.innerHTML = itemsHTML;
+        }
+    });
+</script>
+{% endblock %}

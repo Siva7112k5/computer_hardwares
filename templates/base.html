@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HardwareHub - Premium Computer Components{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">Hardware<span>Hub</span></div>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('index') }}" {% if request.endpoint == 'index' %}class="active"{% endif %}>Home</a></li>
+                    <li><a href="{{ url_for('products') }}" {% if request.endpoint == 'products' %}class="active"{% endif %}>Products</a></li>
+                    <li><a href="{{ url_for('about') }}" {% if request.endpoint == 'about' %}class="active"{% endif %}>About</a></li>
+                    <li><a href="{{ url_for('cart') }}">Cart <span class="cart-count">0</span></a></li>
+                    <li><a href="{{ url_for('orders') }}" {% if request.endpoint == 'orders' %}class="active"{% endif %}>My Orders</a></li>
+                    <li><a href="{{ url_for('tracking') }}" {% if request.endpoint == 'tracking' %}class="active"{% endif %}>Track Order</a></li>
+                    {% if current_user.is_authenticated and current_user.is_admin %}
+                        <li><a href="{{ url_for('admin_dashboard') }}" class="admin-link">Admin</a></li>
+                    {% endif %}
+                    {% if current_user.is_authenticated %}
+                        <li><a href="#" class="logout-btn" id="logoutBtn">Logout ({{ current_user.username }})</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('login') }}" class="login-btn" id="loginNavBtn">Login</a></li>
+                    {% endif %}
+                </ul>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="notification {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>HardwareHub</h3>
+                    <p>Your trusted source for premium computer components and peripherals. Quality hardware for gamers, creators, and professionals.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('products') }}">Products</a></li>
+                        <li><a href="{{ url_for('about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('orders') }}">My Orders</a></li>
+                        <li><a href="{{ url_for('tracking') }}">Track Order</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Us</h4>
+                    <p><i class="fas fa-phone"></i> +91 98765 43210</p>
+                    <p><i class="fas fa-envelope"></i> support@hardwarehub.com</p>
+                    <p><i class="fas fa-map-marker-alt"></i> Tech Park, Bangalore</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 HardwareHub. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+    
+    <script>
+        // Logout functionality
+        document.getElementById('logoutBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = "{{ url_for('logout') }}";
+        });
+    </script>
+</body>
+</html>

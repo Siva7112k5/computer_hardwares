@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - SweetDelight{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    {% include 'admin/sidebar.html' %}
+    
+    <main class="admin-main">
+        <div class="admin-top-bar">
+            <div class="admin-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search...">
+            </div>
+            <div class="admin-user">
+                <div class="admin-notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+                <div class="admin-profile">
+                    <img src="https://via.placeholder.com/40" alt="Profile">
+                    <span>{{ current_user.username }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="admin-stats-grid">
+            <div class="admin-stat-card">
+                <div class="stat-icon blue">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ total_users }}</h3>
+                    <p>Total Users</p>
+                </div>
+            </div>
+            
+            <div class="admin-stat-card">
+                <div class="stat-icon green">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ total_products }}</h3>
+                    <p>Total Products</p>
+                </div>
+            </div>
+            
+            <div class="admin-stat-card">
+                <div class="stat-icon orange">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ total_orders }}</h3>
+                    <p>Total Orders</p>
+                </div>
+            </div>
+            
+            <div class="admin-stat-card">
+                <div class="stat-icon red">
+                    <i class="fas fa-rupee-sign"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>₹{{ total_orders * 500 }}</h3>
+                    <p>Revenue</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="admin-table-container">
+            <div class="admin-table-header">
+                <h2>Recent Orders</h2>
+                <a href="{{ url_for('admin_orders') }}" class="admin-btn admin-btn-primary">View All</a>
+            </div>
+            
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                    <tr>
+                        <td>{{ order.order_number }}</td>
+                        <td>{{ order.full_name }}</td>
+                        <td>₹{{ order.total }}</td>
+                        <td>
+                            <span class="status-badge status-{{ order.status }}">
+                                {{ order.status }}
+                            </span>
+                        </td>
+                        <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <i class="fas fa-eye action-icon" title="View"></i>
+                            <i class="fas fa-edit action-icon edit" title="Edit"></i>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

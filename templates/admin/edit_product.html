@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Product - Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    {% include 'admin/sidebar.html' %}
+    
+    <main class="admin-main">
+        <div class="admin-top-bar">
+            <h2>Edit Product: {{ product.name }}</h2>
+            <a href="{{ url_for('admin_products') }}" class="admin-btn admin-btn-primary">
+                <i class="fas fa-arrow-left"></i> Back to Products
+            </a>
+        </div>
+        
+        <form class="admin-form" method="POST" enctype="multipart/form-data">
+            <div class="admin-form-group">
+                <label for="name">Product Name *</label>
+                <input type="text" id="name" name="name" value="{{ product.name }}" required>
+            </div>
+            
+            <div class="admin-form-row">
+                <div class="admin-form-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        <option value="sweets" {% if product.category == 'sweets' %}selected{% endif %}>Sweets</option>
+                        <option value="cookies" {% if product.category == 'cookies' %}selected{% endif %}>Cookies</option>
+                        <option value="cakes" {% if product.category == 'cakes' %}selected{% endif %}>Cakes</option>
+                        <option value="other" {% if product.category == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                
+                <div class="admin-form-group">
+                    <label for="discount">Discount (%)</label>
+                    <input type="number" id="discount" name="discount" min="0" max="100" value="{{ product.discount }}">
+                </div>
+            </div>
+            
+            <div class="admin-form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="4">{{ product.description }}</textarea>
+            </div>
+            
+            <div class="admin-form-row">
+                <div class="admin-form-group">
+                    <label>
+                        <input type="checkbox" name="veg" {% if product.veg %}checked{% endif %}> Veg
+                    </label>
+                </div>
+                
+                <div class="admin-form-group">
+                    <label>
+                        <input type="checkbox" name="featured" {% if product.featured %}checked{% endif %}> Featured Product
+                    </label>
+                </div>
+            </div>
+            
+            <div class="admin-form-group">
+                <label>Product Image</label>
+                <div class="image-upload-container" onclick="document.getElementById('imageInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Click to upload new image (leave empty to keep current)</p>
+                </div>
+                <input type="file" id="imageInput" name="image" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                
+                {% if product.image %}
+                <div class="image-preview" id="imagePreview" style="display: block;">
+                    <img src="{{ url_for('static', filename='img/products/' + product.image) }}" alt="Current Image">
+                    <p style="font-size: 0.8rem; color: #7f8c8d;">Current Image</p>
+                </div>
+                {% else %}
+                <div class="image-preview" id="imagePreview">
+                    <img src="" alt="Preview">
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="admin-form-group">
+                <label>Weight Options *</label>
+                <div id="weightOptions">
+                    {% for weight in product.weights %}
+                    <div class="weight-option-row">
+                        <input type="text" name="weight[]" value="{{ weight.weight }}" required>
+                        <input type="number" name="price[]" value="{{ weight.price }}" required>
+                        <i class="fas fa-times remove-weight" onclick="this.parentElement.remove()"></i>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="add-weight-btn" onclick="addWeightOption()">
+                    <i class="fas fa-plus"></i> Add Weight Option
+                </button>
+            </div>
+            
+            <div class="admin-form-actions">
+                <button type="submit" class="admin-btn admin-btn-success">
+                    <i class="fas fa-save"></i> Update Product
+                </button>
+                <a href="{{ url_for('admin_products') }}" class="admin-btn admin-btn-primary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </main>
+</div>
+
+<script>
+    function addWeightOption() {
+        const container = document.getElementById('weightOptions');
+        const newRow = document.createElement('div');
+        newRow.className = 'weight-option-row';
+        newRow.innerHTML = `
+            <input type="text" name="weight[]" placeholder="e.g., 250g" required>
+            <input type="number" name="price[]" placeholder="Price (₹)" required>
+            <i class="fas fa-times remove-weight" onclick="this.parentElement.remove()"></i>
+        `;
+        container.appendChild(newRow);
+    }
+    
+    function previewImage(input) {
+        const preview = document.getElementById('imagePreview');
+        const previewImg = preview.querySelector('img');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %}

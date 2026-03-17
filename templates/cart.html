@@ -1,0 +1,593 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart - HardwareHub{% endblock %}
+
+{% block content %}
+<section class="cart-section">
+    <div class="container">
+        <h1 class="page-title">Shopping Cart</h1>
+        
+        <div class="cart-container">
+            <div class="cart-items">
+                <div id="cartItemsContainer">
+                    <!-- Cart items will be loaded dynamically -->
+                </div>
+                <div class="empty-cart" id="emptyCartMessage" style="display: none;">
+                    <i class="fas fa-shopping-cart"></i>
+                    <p>Your cart is empty</p>
+                    <a href="{{ url_for('products') }}" class="btn btn-primary">Browse Products</a>
+                </div>
+            </div>
+            
+            <div class="cart-summary">
+                <h3>Order Summary</h3>
+                <div class="summary-details">
+                    <div class="summary-item">
+                        <span>Subtotal</span>
+                        <span class="subtotal">₹0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Shipping</span>
+                        <span id="shippingCost">₹99</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Tax (GST)</span>
+                        <span id="taxAmount">₹0</span>
+                    </div>
+                </div>
+                
+                <div class="summary-total">
+                    <span>Total</span>
+                    <span class="total-amount">₹99</span>
+                </div>
+                
+                <div class="free-shipping-progress" id="freeShippingProgress" style="display: none;">
+                    <p>Add <span id="amountForFreeShipping">₹4,901</span> more for FREE shipping</p>
+                    <div class="progress-bar">
+                        <div class="progress" id="shippingProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <button class="checkout-btn" id="checkoutBtn">
+                    <i class="fas fa-lock"></i> Proceed to Checkout
+                </button>
+                
+                <a href="{{ url_for('products') }}" class="continue-shopping">
+                    <i class="fas fa-arrow-left"></i> Continue Shopping
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Checkout Modal -->
+<div class="modal" id="checkoutModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Complete Your Order</h2>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p class="modal-subtitle">Please provide your delivery details</p>
+            
+            <form id="checkoutForm">
+                <div class="form-group">
+                    <label for="fullName">
+                        <i class="fas fa-user"></i> Full Name *
+                    </label>
+                    <input type="text" id="fullName" name="fullName" 
+                           value="{{ current_user.username if current_user.is_authenticated else '' }}" 
+                           required placeholder="Enter your full name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phoneNumber">
+                        <i class="fas fa-phone"></i> Phone Number *
+                    </label>
+                    <input type="tel" id="phoneNumber" name="phoneNumber" 
+                           value="{{ current_user.phone if current_user.phone else '' }}" 
+                           pattern="[0-9]{10}" required placeholder="10-digit mobile number">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i> Email *
+                    </label>
+                    <input type="email" id="email" name="email" 
+                           value="{{ current_user.email if current_user.email else '' }}" 
+                           required placeholder="Email address">
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">
+                        <i class="fas fa-map-marker-alt"></i> Delivery Address *
+                    </label>
+                    <textarea id="address" name="address" rows="3" required 
+                              placeholder="Street address, City, State, Pincode">{{ current_user.address if current_user.address else '' }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="paymentMethod">
+                        <i class="fas fa-credit-card"></i> Payment Method *
+                    </label>
+                    <select id="paymentMethod" name="paymentMethod" required>
+                        <option value="">Select Payment Method</option>
+                        <option value="COD">Cash on Delivery</option>
+                        <option value="Card">Credit/Debit Card</option>
+                        <option value="UPI">UPI (Google Pay, PhonePe, etc.)</option>
+                        <option value="NetBanking">Net Banking</option>
+                    </select>
+                </div>
+                
+                <div class="order-summary-mini">
+                    <h4>Order Summary</h4>
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="modalSubtotal">₹0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span id="modalShipping">₹99</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax (GST)</span>
+                        <span id="modalTax">₹0</span>
+                    </div>
+                    <div class="summary-row total-row">
+                        <span>Total</span>
+                        <span id="modalTotal">₹99</span>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="submit" class="confirm-order-btn" id="confirmOrderBtn">
+                        <i class="fas fa-check-circle"></i> Place Order
+                    </button>
+                    <button type="button" class="cancel-btn" id="cancelModalBtn">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal" id="loadingModal" style="display: none;">
+    <div class="modal-content" style="text-align: center; padding: 3rem;">
+        <div class="spinner"></div>
+        <h3 style="margin-top: 1.5rem; color: var(--text-primary);">Processing your order...</h3>
+        <p style="color: var(--text-secondary);">Please wait while we confirm your order</p>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Cart functionality
+    let cartItems = [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCart();
+        updateCartCount();
+        renderCart();
+    });
+
+    function loadCart() {
+        try {
+            const savedCart = localStorage.getItem('cart');
+            cartItems = savedCart ? JSON.parse(savedCart) : [];
+            if (!Array.isArray(cartItems)) cartItems = [];
+        } catch (e) {
+            console.error('Error loading cart:', e);
+            cartItems = [];
+        }
+    }
+
+    function updateCartCount() {
+        const cartCount = document.querySelector('.cart-count');
+        if (cartCount) {
+            const totalItems = cartItems.reduce((sum, item) => sum + (parseInt(item.quantity) || 0), 0);
+            cartCount.textContent = totalItems;
+        }
+    }
+
+    function renderCart() {
+        const cartContainer = document.getElementById('cartItemsContainer');
+        const emptyMessage = document.getElementById('emptyCartMessage');
+        const subtotalElement = document.querySelector('.subtotal');
+        const totalElement = document.querySelector('.total-amount');
+        const shippingElement = document.getElementById('shippingCost');
+        const taxElement = document.getElementById('taxAmount');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        const freeShippingDiv = document.getElementById('freeShippingProgress');
+        const progressBar = document.getElementById('shippingProgress');
+        const amountSpan = document.getElementById('amountForFreeShipping');
+        
+        const SHIPPING_COST = 99;
+        const FREE_SHIPPING_THRESHOLD = 5000;
+        const TAX_RATE = 0.18; // 18% GST
+        
+        if (!cartContainer) return;
+        
+        if (!cartItems || cartItems.length === 0) {
+            emptyMessage.style.display = 'block';
+            cartContainer.innerHTML = '';
+            if (subtotalElement) subtotalElement.textContent = '₹0';
+            if (shippingElement) shippingElement.textContent = '₹0';
+            if (taxElement) taxElement.textContent = '₹0';
+            if (totalElement) totalElement.textContent = '₹0';
+            if (checkoutBtn) checkoutBtn.disabled = true;
+            if (freeShippingDiv) freeShippingDiv.style.display = 'none';
+            return;
+        }
+        
+        emptyMessage.style.display = 'none';
+        
+        let cartHTML = '';
+        let subtotal = 0;
+        
+        cartItems.forEach((item, index) => {
+            const quantity = parseInt(item.quantity) || 1;
+            const price = parseInt(item.price) || 0;
+            const itemTotal = price * quantity;
+            subtotal += itemTotal;
+            
+            cartHTML += `
+                <div class="cart-item" data-index="${index}">
+                    <img src="${item.image || 'https://via.placeholder.com/100x100?text=Hardware'}" 
+                         alt="${item.name || 'Product'}" 
+                         onerror="this.src='https://via.placeholder.com/100x100?text=Hardware'">
+                    <div class="cart-item-details">
+                        <h4>${item.name || 'Product'}</h4>
+                        <p>${item.brand || ''} ${item.variantName ? ' - ' + item.variantName : ''}</p>
+                        <p class="item-price">₹${price}</p>
+                    </div>
+                    <div class="cart-item-price">₹${itemTotal}</div>
+                    <div class="cart-item-actions">
+                        <button class="quantity-btn minus" data-index="${index}">-</button>
+                        <span class="quantity">${quantity}</span>
+                        <button class="quantity-btn plus" data-index="${index}">+</button>
+                        <i class="fas fa-trash remove-item" data-index="${index}"></i>
+                    </div>
+                </div>
+            `;
+        });
+        
+        cartContainer.innerHTML = cartHTML;
+        
+        // Calculate shipping and tax
+        const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+        const tax = Math.round(subtotal * TAX_RATE);
+        const total = subtotal + shipping + tax;
+        
+        // Update summary
+        if (subtotalElement) subtotalElement.textContent = `₹${subtotal}`;
+        if (shippingElement) shippingElement.textContent = shipping === 0 ? 'FREE' : `₹${shipping}`;
+        if (taxElement) taxElement.textContent = `₹${tax}`;
+        if (totalElement) totalElement.textContent = `₹${total}`;
+        if (checkoutBtn) checkoutBtn.disabled = false;
+        
+        // Show/hide free shipping progress
+        if (subtotal < FREE_SHIPPING_THRESHOLD) {
+            freeShippingDiv.style.display = 'block';
+            const amountNeeded = FREE_SHIPPING_THRESHOLD - subtotal;
+            amountSpan.textContent = `₹${amountNeeded.toLocaleString()}`;
+            const progressPercent = (subtotal / FREE_SHIPPING_THRESHOLD) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+        } else {
+            freeShippingDiv.style.display = 'none';
+        }
+        
+        attachCartActions();
+    }
+
+    function attachCartActions() {
+        document.querySelectorAll('.quantity-btn.plus').forEach(btn => {
+            btn.removeEventListener('click', handlePlusClick);
+            btn.addEventListener('click', handlePlusClick);
+        });
+        
+        document.querySelectorAll('.quantity-btn.minus').forEach(btn => {
+            btn.removeEventListener('click', handleMinusClick);
+            btn.addEventListener('click', handleMinusClick);
+        });
+        
+        document.querySelectorAll('.remove-item').forEach(btn => {
+            btn.removeEventListener('click', handleRemoveClick);
+            btn.addEventListener('click', handleRemoveClick);
+        });
+    }
+
+    function handlePlusClick(e) {
+        const index = e.target.dataset.index;
+        if (cartItems[index]) {
+            cartItems[index].quantity = (parseInt(cartItems[index].quantity) || 1) + 1;
+            saveCartAndRender();
+        }
+    }
+
+    function handleMinusClick(e) {
+        const index = e.target.dataset.index;
+        if (cartItems[index]) {
+            const currentQty = parseInt(cartItems[index].quantity) || 1;
+            if (currentQty > 1) {
+                cartItems[index].quantity = currentQty - 1;
+            } else {
+                cartItems.splice(index, 1);
+            }
+            saveCartAndRender();
+        }
+    }
+
+    function handleRemoveClick(e) {
+        const index = e.target.dataset.index;
+        cartItems.splice(index, 1);
+        saveCartAndRender();
+        showNotification('Item removed from cart');
+    }
+
+    function saveCartAndRender() {
+        localStorage.setItem('cart', JSON.stringify(cartItems));
+        renderCart();
+        updateCartCount();
+    }
+
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    // Checkout button handler
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    if (checkoutBtn) {
+        checkoutBtn.onclick = function() {
+            {% if not current_user.is_authenticated %}
+                showNotification('Please login to checkout', 'error');
+                setTimeout(() => {
+                    window.location.href = "{{ url_for('login') }}";
+                }, 2000);
+                return false;
+            {% endif %}
+            
+            if (!cartItems || cartItems.length === 0) {
+                showNotification('Your cart is empty!', 'error');
+                return false;
+            }
+            
+            // Calculate totals for modal
+            const subtotal = cartItems.reduce((sum, item) => {
+                return sum + ((parseInt(item.price) || 0) * (parseInt(item.quantity) || 1));
+            }, 0);
+            const shipping = subtotal >= 5000 ? 0 : 99;
+            const tax = Math.round(subtotal * 0.18);
+            const total = subtotal + shipping + tax;
+            
+            document.getElementById('modalSubtotal').textContent = `₹${subtotal}`;
+            document.getElementById('modalShipping').textContent = shipping === 0 ? 'FREE' : `₹${shipping}`;
+            document.getElementById('modalTax').textContent = `₹${tax}`;
+            document.getElementById('modalTotal').textContent = `₹${total}`;
+            
+            {% if current_user.is_authenticated %}
+            document.getElementById('fullName').value = "{{ current_user.username }}";
+            document.getElementById('phoneNumber').value = "{{ current_user.phone or '' }}";
+            document.getElementById('email').value = "{{ current_user.email or '' }}";
+            document.getElementById('address').value = "{{ current_user.address or '' }}";
+            {% endif %}
+            
+            document.getElementById('checkoutModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            return false;
+        };
+    }
+
+    // Modal close handlers
+    document.querySelector('.close-modal')?.addEventListener('click', function() {
+        document.getElementById('checkoutModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    });
+
+    document.getElementById('cancelModalBtn')?.addEventListener('click', function() {
+        document.getElementById('checkoutModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    });
+
+    window.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal')) {
+            e.target.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    });
+
+    // Checkout form submission
+    document.getElementById('checkoutForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const fullName = document.getElementById('fullName').value.trim();
+        const phoneNumber = document.getElementById('phoneNumber').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const paymentMethod = document.getElementById('paymentMethod').value;
+        
+        if (!fullName || !phoneNumber || !email || !address || !paymentMethod) {
+            showNotification('Please fill in all fields', 'error');
+            return;
+        }
+        
+        if (!/^\d{10}$/.test(phoneNumber)) {
+            showNotification('Please enter a valid 10-digit phone number', 'error');
+            return;
+        }
+        
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showNotification('Please enter a valid email address', 'error');
+            return;
+        }
+        
+        const subtotal = cartItems.reduce((sum, item) => {
+            return sum + ((parseInt(item.price) || 0) * (parseInt(item.quantity) || 1));
+        }, 0);
+        const shipping = subtotal >= 5000 ? 0 : 99;
+        const tax = Math.round(subtotal * 0.18);
+        const total = subtotal + shipping + tax;
+        
+        const orderData = {
+            fullName: fullName,
+            phoneNumber: phoneNumber,
+            email: email,
+            address: address,
+            paymentMethod: paymentMethod,
+            subtotal: subtotal,
+            shipping: shipping,
+            tax: tax,
+            total: total,
+            items: cartItems.map(item => ({
+                id: item.id,
+                name: item.name,
+                brand: item.brand,
+                variantName: item.variantName,
+                price: parseInt(item.price) || 0,
+                quantity: parseInt(item.quantity) || 1
+            }))
+        };
+        
+        document.getElementById('checkoutModal').style.display = 'none';
+        document.getElementById('loadingModal').style.display = 'block';
+        
+        try {
+            const response = await fetch('/api/place-order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(orderData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                orderData.orderNumber = result.order_number;
+                localStorage.setItem('lastOrder', JSON.stringify(orderData));
+                localStorage.removeItem('cart');
+                cartItems = [];
+                updateCartCount();
+                
+                document.getElementById('loadingModal').style.display = 'none';
+                window.location.href = "{{ url_for('confirmation') }}";
+            } else {
+                throw new Error(result.message || 'Failed to place order');
+            }
+        } catch (error) {
+            console.error('Error placing order:', error);
+            document.getElementById('loadingModal').style.display = 'none';
+            showNotification('Failed to place order. Please try again.', 'error');
+        }
+    });
+</script>
+
+<style>
+    .free-shipping-progress {
+        background: #F0F7FF;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+    
+    .free-shipping-progress p {
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .free-shipping-progress span {
+        color: var(--success-green);
+        font-weight: 600;
+    }
+    
+    .progress-bar {
+        height: 8px;
+        background: #E5E7EB;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .progress {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary-blue), var(--accent-cyan));
+        transition: width 0.3s ease;
+    }
+    
+    .item-price {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-top: 0.3rem;
+    }
+    
+    .order-summary-mini {
+        background: #F9FAFB;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 0.8rem 0;
+        color: var(--text-secondary);
+    }
+    
+    .summary-row.total-row {
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 1.2rem;
+        border-top: 2px solid #E5E7EB;
+        padding-top: 0.8rem;
+        margin-top: 0.8rem;
+    }
+    
+    .confirm-order-btn {
+        flex: 2;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--primary-blue), var(--accent-cyan));
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .confirm-order-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,102,204,0.3);
+    }
+    
+    .cancel-btn {
+        flex: 1;
+        padding: 1rem;
+        background: white;
+        color: var(--text-primary);
+        border: 2px solid #E5E7EB;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .cancel-btn:hover {
+        background: #F9FAFB;
+        border-color: var(--text-secondary);
+    }
+</style>
+{% endblock %}

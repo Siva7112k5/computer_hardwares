@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Track Order - SweetDelight{% endblock %}
+
+{% block content %}
+<section class="tracking-section">
+    <div class="container">
+        <h1 class="page-title">Track Your Order</h1>
+        
+        <div class="tracking-container">
+            <div class="tracking-form-container">
+                <form class="tracking-form" id="track-form">
+                    <h3><i class="fas fa-search"></i> Find Your Order</h3>
+                    
+                    <div class="form-group">
+                        <label for="username">
+                            <i class="fas fa-user"></i> Your Name
+                        </label>
+                        <input type="text" id="username" placeholder="Enter your full name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">
+                            <i class="fas fa-phone"></i> Phone Number
+                        </label>
+                        <input type="tel" id="phone" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="order-id">
+                            <i class="fas fa-hashtag"></i> Order Number
+                        </label>
+                        <input type="text" id="order-id" placeholder="e.g., SWT12345678" required>
+                    </div>
+                    
+                    <button type="submit" class="track-btn">
+                        <i class="fas fa-location-dot"></i> Track Order
+                    </button>
+                </form>
+                
+                <div class="order-status" style="display: none;">
+                    <h3><i class="fas fa-truck"></i> Order Status</h3>
+                    <div class="status-steps">
+                        <div class="step completed">
+                            <div class="step-icon">✓</div>
+                            <span>Order Placed</span>
+                        </div>
+                        <div class="step active">
+                            <div class="step-icon">2</div>
+                            <span>Preparing</span>
+                        </div>
+                        <div class="step">
+                            <div class="step-icon">3</div>
+                            <span>Out for Delivery</span>
+                        </div>
+                        <div class="step">
+                            <div class="step-icon">4</div>
+                            <span>Delivered</span>
+                        </div>
+                    </div>
+                    
+                    <div class="delivery-info">
+                        <p><i class="fas fa-map-marker-alt"></i> <strong>Delivery Address:</strong> <span id="deliveryAddress">-</span></p>
+                        <p><i class="fas fa-clock"></i> <strong>Estimated Delivery:</strong> 45-60 minutes</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="map-container">
+                <h3><i class="fas fa-map"></i> Live Tracking</h3>
+                <div id="map" class="map"></div>
+                
+                <div class="delivery-partner" id="deliveryPartner" style="display: none;">
+                    <img src="https://via.placeholder.com/70" alt="Delivery Partner">
+                    <div class="partner-info">
+                        <h4>Rahul Kumar</h4>
+                        <p><i class="fas fa-star"></i> 4.8 • 500+ deliveries</p>
+                        <p><i class="fas fa-phone"></i> +91 98765 43210</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    let map;
+    
+    document.getElementById('track-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const phone = document.getElementById('phone').value;
+        const orderId = document.getElementById('order-id').value;
+        
+        if (username && phone && orderId) {
+            // Show order status
+            document.querySelector('.order-status').style.display = 'block';
+            document.getElementById('deliveryPartner').style.display = 'flex';
+            
+            // Update delivery address from last order if available
+            const lastOrder = JSON.parse(localStorage.getItem('lastOrder'));
+            const deliveryAddress = document.getElementById('deliveryAddress');
+            if (deliveryAddress && lastOrder && lastOrder.phoneNumber === phone) {
+                deliveryAddress.textContent = lastOrder.address;
+            } else {
+                deliveryAddress.textContent = '123, Sweet Street, Mumbai - 400001';
+            }
+            
+            // Initialize map if not already
+            if (!map) {
+                initMap();
+            }
+            
+            // Simulate order tracking
+            const steps = document.querySelectorAll('.step');
+            steps.forEach((step, index) => {
+                step.classList.remove('completed', 'active');
+            });
+            
+            steps[0].classList.add('completed');
+            steps[1].classList.add('active');
+            
+            // Simulate progress
+            setTimeout(() => {
+                steps[1].classList.add('completed');
+                steps[2].classList.add('active');
+                showNotification('Your order is out for delivery!');
+            }, 5000);
+            
+            setTimeout(() => {
+                steps[2].classList.add('completed');
+                steps[3].classList.add('active');
+                showNotification('Order delivered! Enjoy your sweets');
+            }, 10000);
+            
+            showNotification('Order found! Tracking started.');
+        }
+    });
+    
+    function initMap() {
+        const mapContainer = document.getElementById('map');
+        if (mapContainer && typeof L !== 'undefined') {
+            // Default location (Mumbai)
+            map = L.map('map').setView([19.0760, 72.8777], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Add markers for shop and delivery location
+            const shopIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: '<div style="background-color: #8B4513; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #FFF8E7;"></div>',
+                iconSize: [20, 20]
+            });
+            
+            const deliveryIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: '<div style="background-color: #D2691E; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #FFF8E7;"></div>',
+                iconSize: [20, 20]
+            });
+            
+            // Shop location
+            L.marker([19.0760, 72.8777], { icon: shopIcon })
+                .bindPopup('SweetDelight Shop')
+                .addTo(map);
+            
+            // Delivery location (slightly offset for demo)
+            L.marker([19.0860, 72.8877], { icon: deliveryIcon })
+                .bindPopup('Your Delivery Location')
+                .addTo(map);
+            
+            // Draw route line
+            const latlngs = [
+                [19.0760, 72.8777],
+                [19.0810, 72.8827],
+                [19.0860, 72.8877]
+            ];
+            
+            L.polyline(latlngs, { color: '#8B4513', weight: 4 }).addTo(map);
+            
+            // Add moving delivery icon
+            let step = 0;
+            const deliveryVehicle = L.marker(latlngs[0], {
+                icon: L.divIcon({
+                    className: 'custom-div-icon',
+                    html: '<div style="background-color: #D2691E; width: 15px; height: 15px; border-radius: 50%; border: 2px solid #FFF8E7; animation: pulse 1s ease infinite;"></div>',
+                    iconSize: [15, 15]
+                })
+            }).addTo(map);
+            
+            const interval = setInterval(() => {
+                step++;
+                if (step < latlngs.length) {
+                    deliveryVehicle.setLatLng(latlngs[step]);
+                } else {
+                    clearInterval(interval);
+                }
+            }, 3000);
+        }
+    }
+    
+    // Initialize map if on tracking page
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.location.pathname.includes('tracking')) {
+            setTimeout(() => {
+                if (document.getElementById('map') && !map && typeof L !== 'undefined') {
+                    initMap();
+                }
+            }, 500);
+        }
+    });
+</script>
+{% endblock %}

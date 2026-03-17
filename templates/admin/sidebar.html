@@ -1,0 +1,59 @@
+<aside class="admin-sidebar">
+    <div class="admin-sidebar-header">
+        <h2>SweetDelight</h2>
+        <p>Admin Panel</p>
+    </div>
+    
+    <nav class="admin-sidebar-menu">
+        <ul>
+            <li>
+                <a href="{{ url_for('admin_dashboard') }}" {% if request.endpoint == 'admin_dashboard' %}class="active"{% endif %}>
+                    <i class="fas fa-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('admin_users') }}" {% if request.endpoint == 'admin_users' %}class="active"{% endif %}>
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('admin_products') }}" {% if request.endpoint == 'admin_products' %}class="active"{% endif %}>
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('admin_orders') }}" {% if request.endpoint == 'admin_orders' %}class="active"{% endif %}>
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Orders</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('index') }}">
+                    <i class="fas fa-home"></i>
+                    <span>Back to Site</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</aside>

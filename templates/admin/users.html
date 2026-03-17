@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    {% include 'admin/sidebar.html' %}
+    
+    <main class="admin-main">
+        <div class="admin-top-bar">
+            <div class="admin-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search users..." id="searchUsers">
+            </div>
+            <div class="admin-user">
+                <div class="admin-notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+                <div class="admin-profile">
+                    <img src="https://via.placeholder.com/40" alt="Profile">
+                    <span>{{ current_user.username }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="admin-table-container">
+            <div class="admin-table-header">
+                <h2>Users Management</h2>
+                <button class="admin-btn admin-btn-success" onclick="alert('Add user functionality coming soon!')">
+                    <i class="fas fa-plus"></i> Add New User
+                </button>
+            </div>
+            
+            <table class="admin-table" id="usersTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Role</th>
+                        <th>Joined Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.phone or '-' }}</td>
+                        <td>
+                            {% if user.is_admin %}
+                            <span class="status-badge status-active">Admin</span>
+                            {% else %}
+                            <span class="status-badge status-inactive">User</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <i class="fas fa-eye action-icon" title="View"></i>
+                            <i class="fas fa-edit action-icon edit" title="Edit"></i>
+                            <i class="fas fa-trash action-icon delete" title="Delete"></i>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script>
+    document.getElementById('searchUsers').addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#usersTable tbody tr');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchValue)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}
