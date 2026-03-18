@@ -552,35 +552,58 @@ def admin_dashboard():
     total_products = Product.query.count()
     total_services = Service.query.count()
     total_orders = Order.query.count()
-    total_tickets = SupportTicket.query.filter_by(status='open').count()
+    
+    # Count for badges
+    open_tickets_count = SupportTicket.query.filter_by(status='open').count()
+    unread_bookings_count = ServiceBooking.query.filter_by(status='pending').count()
+    
     recent_orders = Order.query.order_by(Order.created_at.desc()).limit(5).all()
+    recent_tickets = SupportTicket.query.order_by(SupportTicket.created_at.desc()).limit(5).all()
+    recent_bookings = ServiceBooking.query.order_by(ServiceBooking.created_at.desc()).limit(5).all()
     
     return render_template('admin/dashboard.html', 
                          total_users=total_users,
                          total_products=total_products,
                          total_services=total_services,
                          total_orders=total_orders,
-                         total_tickets=total_tickets,
-                         recent_orders=recent_orders)
+                         open_tickets_count=open_tickets_count,
+                         unread_bookings_count=unread_bookings_count,
+                         recent_orders=recent_orders,
+                         recent_tickets=recent_tickets,
+                         recent_bookings=recent_bookings)
 
 @app.route('/admin/users')
 @login_required
 @admin_required
 def admin_users():
     users = User.query.all()
-    return render_template('admin/users.html', users=users)
+    # Get counts for sidebar badges
+    open_tickets_count = SupportTicket.query.filter_by(status='open').count()
+    unread_bookings_count = ServiceBooking.query.filter_by(status='pending').count()
+    return render_template('admin/users.html', users=users, 
+                         open_tickets_count=open_tickets_count,
+                         unread_bookings_count=unread_bookings_count)
 
 @app.route('/admin/products')
 @login_required
 @admin_required
 def admin_products():
     products = Product.query.all()
-    return render_template('admin/products.html', products=products)
+    # Get counts for sidebar badges
+    open_tickets_count = SupportTicket.query.filter_by(status='open').count()
+    unread_bookings_count = ServiceBooking.query.filter_by(status='pending').count()
+    return render_template('admin/products.html', products=products,
+                         open_tickets_count=open_tickets_count,
+                         unread_bookings_count=unread_bookings_count)
 
 @app.route('/admin/products/add', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def add_product():
+    # Get counts for sidebar badges
+    open_tickets_count = SupportTicket.query.filter_by(status='open').count()
+    unread_bookings_count = ServiceBooking.query.filter_by(status='pending').count()
+    
     if request.method == 'POST':
         name = request.form.get('name')
         category = request.form.get('category')
@@ -630,13 +653,18 @@ def add_product():
         flash('Product added successfully!', 'success')
         return redirect(url_for('admin_products'))
     
-    return render_template('admin/add_product.html')
+    return render_template('admin/add_product.html',
+                         open_tickets_count=open_tickets_count,
+                         unread_bookings_count=unread_bookings_count)
 
 @app.route('/admin/products/edit/<int:product_id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def edit_product(product_id):
     product = Product.query.get_or_404(product_id)
+    # Get counts for sidebar badges
+    open_tickets_count = SupportTicket.query.filter_by(status='open').count()
+    unread_bookings_count = ServiceBooking.query.filter_by(status='pending').count()
     
     if request.method == 'POST':
         product.name = request.form.get('name')
@@ -678,7 +706,9 @@ def edit_product(product_id):
         flash('Product updated successfully!', 'success')
         return redirect(url_for('admin_products'))
     
-    return render_template('admin/edit_product.html', product=product)
+    return render_template('admin/edit_product.html', product=product,
+                         open_tickets_count=open_tickets_count,
+                         unread_bookings_count=unread_bookings_count)
 
 @app.route('/admin/products/delete/<int:product_id>', methods=['POST'])
 @login_required
@@ -703,13 +733,22 @@ def delete_product(product_id):
 def admin_services():
     """Admin: Manage services"""
     services = Service.query.all()
-    return render_template('admin/services.html', services=services)
+    # Get counts for sidebar badges
+    open_tickets_count = SupportTicket.query.filter_by(status='open').count()
+    unread_bookings_count = ServiceBooking.query.filter_by(status='pending').count()
+    return render_template('admin/services.html', services=services,
+                         open_tickets_count=open_tickets_count,
+                         unread_bookings_count=unread_bookings_count)
 
 @app.route('/admin/services/add', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def admin_add_service():
     """Admin: Add new service"""
+    # Get counts for sidebar badges
+    open_tickets_count = SupportTicket.query.filter_by(status='open').count()
+    unread_bookings_count = ServiceBooking.query.filter_by(status='pending').count()
+    
     if request.method == 'POST':
         service = Service(
             name=request.form.get('name'),
@@ -734,7 +773,9 @@ def admin_add_service():
         flash('Service added successfully!', 'success')
         return redirect(url_for('admin_services'))
     
-    return render_template('admin/add_service.html')
+    return render_template('admin/add_service.html',
+                         open_tickets_count=open_tickets_count,
+                         unread_bookings_count=unread_bookings_count)
 
 @app.route('/admin/services/edit/<int:service_id>', methods=['GET', 'POST'])
 @login_required
@@ -742,6 +783,9 @@ def admin_add_service():
 def admin_edit_service(service_id):
     """Admin: Edit service"""
     service = Service.query.get_or_404(service_id)
+    # Get counts for sidebar badges
+    open_tickets_count = SupportTicket.query.filter_by(status='open').count()
+    unread_bookings_count = ServiceBooking.query.filter_by(status='pending').count()
     
     if request.method == 'POST':
         service.name = request.form.get('name')
@@ -764,7 +808,9 @@ def admin_edit_service(service_id):
         flash('Service updated successfully!', 'success')
         return redirect(url_for('admin_services'))
     
-    return render_template('admin/edit_service.html', service=service)
+    return render_template('admin/edit_service.html', service=service,
+                         open_tickets_count=open_tickets_count,
+                         unread_bookings_count=unread_bookings_count)
 
 @app.route('/admin/services/delete/<int:service_id>', methods=['POST'])
 @login_required
@@ -790,7 +836,12 @@ def admin_delete_service(service_id):
 def admin_bookings():
     """Admin: View all service bookings"""
     bookings = ServiceBooking.query.order_by(ServiceBooking.created_at.desc()).all()
-    return render_template('admin/bookings.html', bookings=bookings)
+    # Get counts for sidebar badges
+    open_tickets_count = SupportTicket.query.filter_by(status='open').count()
+    unread_bookings_count = ServiceBooking.query.filter_by(status='pending').count()
+    return render_template('admin/bookings.html', bookings=bookings,
+                         open_tickets_count=open_tickets_count,
+                         unread_bookings_count=unread_bookings_count)
 
 @app.route('/admin/tickets')
 @login_required
@@ -798,14 +849,24 @@ def admin_bookings():
 def admin_tickets():
     """Admin: View all support tickets"""
     tickets = SupportTicket.query.order_by(SupportTicket.created_at.desc()).all()
-    return render_template('admin/tickets.html', tickets=tickets)
+    # Get counts for sidebar badges
+    open_tickets_count = SupportTicket.query.filter_by(status='open').count()
+    unread_bookings_count = ServiceBooking.query.filter_by(status='pending').count()
+    return render_template('admin/tickets.html', tickets=tickets,
+                         open_tickets_count=open_tickets_count,
+                         unread_bookings_count=unread_bookings_count)
 
 @app.route('/admin/orders')
 @login_required
 @admin_required
 def admin_orders():
     orders = Order.query.order_by(Order.created_at.desc()).all()
-    return render_template('admin/orders.html', orders=orders)
+    # Get counts for sidebar badges
+    open_tickets_count = SupportTicket.query.filter_by(status='open').count()
+    unread_bookings_count = ServiceBooking.query.filter_by(status='pending').count()
+    return render_template('admin/orders.html', orders=orders,
+                         open_tickets_count=open_tickets_count,
+                         unread_bookings_count=unread_bookings_count)
 
 @app.route('/admin/orders/update-status/<int:order_id>', methods=['POST'])
 @login_required
@@ -817,7 +878,40 @@ def update_order_status(order_id):
     db.session.commit()
     return jsonify({'success': True})
 
-# ==================== ERROR HANDLERS ====================
+# Add these routes for booking status update and technician assignment
+@app.route('/admin/bookings/update-status/<int:booking_id>', methods=['POST'])
+@login_required
+@admin_required
+def update_booking_status(booking_id):
+    booking = ServiceBooking.query.get_or_404(booking_id)
+    status = request.json.get('status')
+    booking.status = status
+    if status == 'completed':
+        booking.completed_date = datetime.utcnow()
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/admin/bookings/assign-technician/<int:booking_id>', methods=['POST'])
+@login_required
+@admin_required
+def assign_technician(booking_id):
+    booking = ServiceBooking.query.get_or_404(booking_id)
+    technician = request.json.get('technician')
+    booking.technician = technician
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/admin/tickets/update-status/<int:ticket_id>', methods=['POST'])
+@login_required
+@admin_required
+def update_ticket_status(ticket_id):
+    ticket = SupportTicket.query.get_or_404(ticket_id)
+    status = request.json.get('status')
+    ticket.status = status
+    if status == 'resolved' or status == 'closed':
+        ticket.resolved_at = datetime.utcnow()
+    db.session.commit()
+    return jsonify({'success': True})# ==================== ERROR HANDLERS ====================
 
 @app.errorhandler(404)
 def page_not_found(e):

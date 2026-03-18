@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Support Tickets - HardwareHub Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    {% include 'admin/sidebar.html' %}
+    
+    <main class="admin-main">
+        <div class="admin-top-bar">
+            <div class="admin-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search tickets..." id="searchTickets">
+            </div>
+            <div class="admin-user">
+                <div class="admin-notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">{{ open_tickets_count }}</span>
+                </div>
+                <div class="admin-profile">
+                    <img src="https://via.placeholder.com/40" alt="Profile">
+                    <span>{{ current_user.username }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="admin-table-container">
+            <div class="admin-table-header">
+                <h2>Support Tickets</h2>
+                <div class="filter-group">
+                    <select id="statusFilter" style="width: 150px; margin-right: 10px;">
+                        <option value="all">All Status</option>
+                        <option value="open">Open</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                    <select id="priorityFilter" style="width: 150px;">
+                        <option value="all">All Priority</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+            </div>
+            
+            <table class="admin-table" id="ticketsTable">
+                <thead>
+                    <tr>
+                        <th>Ticket #</th>
+                        <th>Customer</th>
+                        <th>Subject</th>
+                        <th>Category</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                    <tr data-status="{{ ticket.status }}" data-priority="{{ ticket.priority }}">
+                        <td>{{ ticket.ticket_number }}</td>
+                        <td>{{ ticket.user.username }}<br><small>{{ ticket.user.email }}</small></td>
+                        <td>{{ ticket.subject[:50] }}...</td>
+                        <td>{{ ticket.category }}</td>
+                        <td>
+                            <span class="priority-badge priority-{{ ticket.priority }}">
+                                {{ ticket.priority|upper }}
+                            </span>
+                        </td>
+                        <td>
+                            <select class="status-select" data-ticket-id="{{ ticket.id }}" onchange="updateTicketStatus(this)">
+                                <option value="open" {% if ticket.status == 'open' %}selected{% endif %}>Open</option>
+                                <option value="in-progress" {% if ticket.status == 'in-progress' %}selected{% endif %}>In Progress</option>
+                                <option value="resolved" {% if ticket.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                                <option value="closed" {% if ticket.status == 'closed' %}selected{% endif %}>Closed</option>
+                            </select>
+                        </td>
+                        <td>{{ ticket.created_at.strftime('%d-%m-%Y') }}</td>
+                        <td>{{ ticket.updated_at.strftime('%d-%m-%Y %H:%M') }}</td>
+                        <td>
+                            <a href="{{ url_for('ticket_detail', ticket_id=ticket.id) }}" class="action-icon view" title="View">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <i class="fas fa-reply action-icon" onclick="replyToTicket('{{ ticket.ticket_number }}')" title="Reply"></i>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<style>
+    .priority-badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 30px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .priority-low {
+        background: #E8F5E9;
+        color: #2E7D32;
+    }
+    
+    .priority-medium {
+        background: #FFF3E0;
+        color: #E65100;
+    }
+    
+    .priority-high {
+        background: #FFEBEE;
+        color: #C62828;
+    }
+    
+    .priority-urgent {
+        background: #C62828;
+        color: white;
+    }
+    
+    .filter-group {
+        display: flex;
+        gap: 10px;
+    }
+</style>
+
+<script>
+    document.getElementById('searchTickets').addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#ticketsTable tbody tr');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchValue)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+    
+    document.getElementById('statusFilter').addEventListener('change', applyFilters);
+    document.getElementById('priorityFilter').addEventListener('change', applyFilters);
+    
+    function applyFilters() {
+        const statusFilter = document.getElementById('statusFilter').value;
+        const priorityFilter = document.getElementById('priorityFilter').value;
+        const rows = document.querySelectorAll('#ticketsTable tbody tr');
+        
+        rows.forEach(row => {
+            const status = row.dataset.status;
+            const priority = row.dataset.priority;
+            
+            let statusMatch = statusFilter === 'all' || status === statusFilter;
+            let priorityMatch = priorityFilter === 'all' || priority === priorityFilter;
+            
+            if (statusMatch && priorityMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    function updateTicketStatus(select) {
+        const ticketId = select.dataset.ticketId;
+        const status = select.value;
+        
+        fetch(`/admin/tickets/update-status/${ticketId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: status })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                select.closest('tr').dataset.status = status;
+                showNotification('Ticket status updated successfully!');
+            }
+        });
+    }
+    
+    function replyToTicket(ticketNumber) {
+        window.location.href = `/admin/ticket/${ticketNumber}/reply`;
+    }
+    
+    function showNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'notification success';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+</script>
+{% endblock %}

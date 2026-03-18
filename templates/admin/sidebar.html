@@ -1,6 +1,6 @@
 <aside class="admin-sidebar">
     <div class="admin-sidebar-header">
-        <h2>SweetDelight</h2>
+        <h2>Hardware_Hub</h2>
         <p>Admin Panel</p>
     </div>
     
@@ -8,15 +8,23 @@
         <ul>
             <li>
                 <a href="{{ url_for('admin_dashboard') }}" {% if request.endpoint == 'admin_dashboard' %}class="active"{% endif %}>
-                    <i class="fas fa-dashboard"></i>
+                    <i class="fas fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
+            </li>
+            
+            <li class="menu-section">
+                <span class="menu-section-title">USER MANAGEMENT</span>
             </li>
             <li>
                 <a href="{{ url_for('admin_users') }}" {% if request.endpoint == 'admin_users' %}class="active"{% endif %}>
                     <i class="fas fa-users"></i>
                     <span>Users</span>
                 </a>
+            </li>
+            
+            <li class="menu-section">
+                <span class="menu-section-title">PRODUCT MANAGEMENT</span>
             </li>
             <li>
                 <a href="{{ url_for('admin_products') }}" {% if request.endpoint == 'admin_products' %}class="active"{% endif %}>
@@ -30,6 +38,42 @@
                     <span>Orders</span>
                 </a>
             </li>
+            
+            <li class="menu-section">
+                <span class="menu-section-title">SERVICE MANAGEMENT</span>
+            </li>
+            <li>
+                <a href="{{ url_for('admin_services') }}" {% if request.endpoint == 'admin_services' %}class="active"{% endif %}>
+                    <i class="fas fa-tools"></i>
+                    <span>Services</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('admin_bookings') }}" {% if request.endpoint == 'admin_bookings' %}class="active"{% endif %}>
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Service Bookings</span>
+                    {% if unread_bookings_count > 0 %}
+                    <span class="menu-badge">{{ unread_bookings_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
+            
+            <li class="menu-section">
+                <span class="menu-section-title">SUPPORT MANAGEMENT</span>
+            </li>
+            <li>
+                <a href="{{ url_for('admin_tickets') }}" {% if request.endpoint == 'admin_tickets' %}class="active"{% endif %}>
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>Support Tickets</span>
+                    {% if open_tickets_count > 0 %}
+                    <span class="menu-badge">{{ open_tickets_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
+            
+            <li class="menu-section">
+                <span class="menu-section-title">ANALYTICS</span>
+            </li>
             <li>
                 <a href="#">
                     <i class="fas fa-chart-line"></i>
@@ -38,10 +82,29 @@
             </li>
             <li>
                 <a href="#">
-                    <i class="fas fa-cog"></i>
-                    <span>Settings</span>
+                    <i class="fas fa-file-invoice"></i>
+                    <span>Invoices</span>
                 </a>
             </li>
+            
+            <li class="menu-section">
+                <span class="menu-section-title">SETTINGS</span>
+            </li>
+            <li>
+                <a href="#">
+                    <i class="fas fa-cog"></i>
+                    <span>General Settings</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Security</span>
+                </a>
+            </li>
+            
+            <li class="menu-divider"></li>
+            
             <li>
                 <a href="{{ url_for('index') }}">
                     <i class="fas fa-home"></i>
@@ -57,3 +120,137 @@
         </ul>
     </nav>
 </aside>
+
+<style>
+    .admin-sidebar {
+        width: 280px;
+        background: linear-gradient(180deg, var(--admin-dark) 0%, #1a1f27 100%);
+        color: white;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        overflow-y: auto;
+        transition: all 0.3s ease;
+        z-index: 1000;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .admin-sidebar-header {
+        padding: 2rem 1.5rem;
+        background: linear-gradient(135deg, var(--primary-blue), var(--accent-cyan));
+        text-align: center;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .admin-sidebar-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        letter-spacing: -0.5px;
+    }
+    
+    .admin-sidebar-header p {
+        margin: 0.3rem 0 0;
+        font-size: 0.8rem;
+        opacity: 0.8;
+        color: rgba(255,255,255,0.9);
+    }
+    
+    .admin-sidebar-menu {
+        padding: 1rem 0;
+    }
+    
+    .admin-sidebar-menu ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .menu-section {
+        padding: 1rem 1.5rem 0.3rem;
+    }
+    
+    .menu-section-title {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: rgba(255,255,255,0.4);
+        font-weight: 600;
+    }
+    
+    .menu-divider {
+        height: 1px;
+        background: rgba(255,255,255,0.1);
+        margin: 1rem 1.5rem;
+    }
+    
+    .admin-sidebar-menu li a {
+        display: flex;
+        align-items: center;
+        padding: 0.8rem 1.5rem;
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        gap: 1rem;
+        font-size: 0.95rem;
+        position: relative;
+    }
+    
+    .admin-sidebar-menu li a:hover {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        padding-left: 2rem;
+    }
+    
+    .admin-sidebar-menu li a.active {
+        background: linear-gradient(90deg, var(--primary-blue), transparent);
+        color: white;
+        border-left: 4px solid var(--accent-cyan);
+    }
+    
+    .admin-sidebar-menu li a i {
+        width: 20px;
+        font-size: 1.1rem;
+        text-align: center;
+    }
+    
+    .menu-badge {
+        background: var(--danger-red);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 0.2rem 0.5rem;
+        border-radius: 20px;
+        margin-left: auto;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+    }
+    
+    /* Scrollbar styling */
+    .admin-sidebar::-webkit-scrollbar {
+        width: 5px;
+    }
+    
+    .admin-sidebar::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.05);
+    }
+    
+    .admin-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.2);
+        border-radius: 5px;
+    }
+    
+    .admin-sidebar::-webkit-scrollbar-thumb:hover {
+        background: rgba(255,255,255,0.3);
+    }
+</style>
