@@ -1,0 +1,476 @@
+{% extends "base.html" %}
+
+{% block title %}Book Service - {{ service.name }} - HardwareHub{% endblock %}
+
+{% block content %}
+<section class="book-service-section">
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="{{ url_for('index') }}">Home</a> &gt;
+            <a href="{{ url_for('services') }}">Services</a> &gt;
+            <a href="{{ url_for('service_detail', service_id=service.id) }}">{{ service.name }}</a> &gt;
+            <span>Book Service</span>
+        </div>
+        
+        <div class="booking-container">
+            <div class="booking-form-container">
+                <h1>Book Service: {{ service.name }}</h1>
+                <p class="subtitle">Fill in your details to schedule this service</p>
+                
+                <form method="POST" class="booking-form" id="bookingForm">
+                    <div class="form-section">
+                        <h3>Personal Information</h3>
+                        
+                        <div class="form-group">
+                            <label for="full_name">
+                                <i class="fas fa-user"></i> Full Name *
+                            </label>
+                            <input type="text" id="full_name" name="full_name" 
+                                   value="{{ current_user.username if current_user.is_authenticated else '' }}" 
+                                   required placeholder="Enter your full name">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="phone">
+                                    <i class="fas fa-phone"></i> Phone Number *
+                                </label>
+                                <input type="tel" id="phone" name="phone" 
+                                       value="{{ current_user.phone if current_user.phone else '' }}" 
+                                       pattern="[0-9]{10}" required placeholder="10-digit mobile number">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">
+                                    <i class="fas fa-envelope"></i> Email *
+                                </label>
+                                <input type="email" id="email" name="email" 
+                                       value="{{ current_user.email if current_user.email else '' }}" 
+                                       required placeholder="Your email address">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="address">
+                                <i class="fas fa-map-marker-alt"></i> Service Address *
+                            </label>
+                            <textarea id="address" name="address" rows="3" required 
+                                      placeholder="Street address, City, State, Pincode">{{ current_user.address if current_user.address else '' }}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Schedule & Details</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="preferred_date">
+                                    <i class="fas fa-calendar"></i> Preferred Date *
+                                </label>
+                                <input type="date" id="preferred_date" name="preferred_date" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="preferred_time">
+                                    <i class="fas fa-clock"></i> Preferred Time
+                                </label>
+                                <select id="preferred_time" name="preferred_time">
+                                    <option value="">Any time</option>
+                                    <option value="09:00-12:00">Morning (9 AM - 12 PM)</option>
+                                    <option value="12:00-15:00">Afternoon (12 PM - 3 PM)</option>
+                                    <option value="15:00-18:00">Evening (3 PM - 6 PM)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="issue_description">
+                                <i class="fas fa-tools"></i> Issue Description
+                            </label>
+                            <textarea id="issue_description" name="issue_description" rows="4" 
+                                      placeholder="Please describe the issue or your requirements in detail..."></textarea>
+                            <small class="form-text">Providing details helps us prepare better for your service</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section service-summary">
+                        <h3>Service Summary</h3>
+                        <div class="summary-card">
+                            <div class="summary-row">
+                                <span>Service:</span>
+                                <span>{{ service.name }}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Category:</span>
+                                <span>{{ service.category }}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Duration:</span>
+                                <span>{{ service.duration }}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Price:</span>
+                                <span class="price">₹{{ service.price }}</span>
+                            </div>
+                            {% if service.includes %}
+                            <div class="summary-row includes">
+                                <span>Includes:</span>
+                                <span>{{ service.includes[:100] }}...</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-large">
+                            <i class="fas fa-calendar-check"></i> Confirm Booking
+                        </button>
+                        <a href="{{ url_for('service_detail', service_id=service.id) }}" class="btn btn-outline">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="booking-info-sidebar">
+                <div class="info-card">
+                    <h3><i class="fas fa-info-circle"></i> Booking Information</h3>
+                    <ul>
+                        <li><i class="fas fa-check-circle"></i> Free consultation included</li>
+                        <li><i class="fas fa-check-circle"></i> No hidden charges</li>
+                        <li><i class="fas fa-check-circle"></i> Certified technicians</li>
+                        <li><i class="fas fa-check-circle"></i> 30-day service warranty</li>
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h3><i class="fas fa-clock"></i> What happens next?</h3>
+                    <ol>
+                        <li>You'll receive a booking confirmation</li>
+                        <li>Our team will contact you within 2 hours</li>
+                        <li>We'll confirm the service schedule</li>
+                        <li>Technician arrives at scheduled time</li>
+                    </ol>
+                </div>
+                
+                <div class="info-card">
+                    <h3><i class="fas fa-phone-alt"></i> Need help?</h3>
+                    <p>Call us at: <strong>+91 98765 43210</strong></p>
+                    <p>Email: <strong>support@hardwarehub.com</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Set min date for date picker to today
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('preferred_date');
+        if (dateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.setAttribute('min', today);
+            dateInput.setAttribute('value', today);
+        }
+    });
+    
+    // Form validation
+    document.getElementById('bookingForm')?.addEventListener('submit', function(e) {
+        const phone = document.getElementById('phone').value;
+        const phoneRegex = /^\d{10}$/;
+        
+        if (!phoneRegex.test(phone)) {
+            e.preventDefault();
+            alert('Please enter a valid 10-digit phone number');
+            return false;
+        }
+        
+        const date = document.getElementById('preferred_date').value;
+        if (!date) {
+            e.preventDefault();
+            alert('Please select a preferred date');
+            return false;
+        }
+    });
+</script>
+
+<style>
+    .book-service-section {
+        padding: 120px 0 60px;
+        background: var(--light-bg);
+        min-height: 100vh;
+    }
+    
+    .breadcrumb {
+        margin-bottom: 2rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    .breadcrumb a {
+        color: var(--primary-blue);
+        text-decoration: none;
+    }
+    
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+    
+    .booking-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+    }
+    
+    .booking-form-container {
+        background: white;
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+    }
+    
+    .booking-form-container h1 {
+        color: var(--text-primary);
+        margin-bottom: 0.3rem;
+        font-size: 2rem;
+    }
+    
+    .subtitle {
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .form-section h3 {
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-section h3::before {
+        content: '';
+        width: 4px;
+        height: 20px;
+        background: linear-gradient(135deg, var(--primary-blue), var(--accent-cyan));
+        border-radius: 2px;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.2rem;
+    }
+    
+    .form-group label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+    
+    .form-group label i {
+        color: var(--primary-blue);
+        width: 20px;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border: 2px solid #E5E7EB;
+        border-radius: 5px;
+        font-size: 0.95rem;
+        transition: var(--transition);
+        background: white;
+        font-family: inherit;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+    }
+    
+    .form-text {
+        display: block;
+        margin-top: 0.3rem;
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+    }
+    
+    .service-summary {
+        background: #F9FAFB;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+    
+    .summary-card {
+        background: white;
+        padding: 1.2rem;
+        border-radius: 5px;
+        border: 1px solid #E5E7EB;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .summary-row:last-child {
+        border-bottom: none;
+    }
+    
+    .summary-row.includes {
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+    
+    .summary-row.includes span:first-child {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .summary-row.includes span:last-child {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    .price {
+        color: var(--primary-blue);
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-large {
+        flex: 2;
+        padding: 1rem;
+        font-size: 1.1rem;
+    }
+    
+    .btn-outline {
+        flex: 1;
+        background: white;
+        border: 2px solid var(--primary-blue);
+        color: var(--primary-blue);
+        text-align: center;
+        text-decoration: none;
+        padding: 0.8rem;
+        border-radius: 5px;
+        transition: var(--transition);
+    }
+    
+    .btn-outline:hover {
+        background: var(--primary-blue);
+        color: white;
+    }
+    
+    .booking-info-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .info-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow);
+        border: 1px solid #E5E7EB;
+    }
+    
+    .info-card h3 {
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .info-card h3 i {
+        color: var(--primary-blue);
+    }
+    
+    .info-card ul,
+    .info-card ol {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .info-card li {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0;
+        color: var(--text-secondary);
+    }
+    
+    .info-card li i {
+        color: var(--success-green);
+    }
+    
+    .info-card ol {
+        list-style: decimal;
+        padding-left: 1.2rem;
+    }
+    
+    .info-card ol li {
+        display: list-item;
+        padding: 0.3rem 0;
+    }
+    
+    @media (max-width: 768px) {
+        .booking-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn-large,
+        .btn-outline {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}

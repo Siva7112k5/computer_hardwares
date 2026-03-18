@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}My Service Bookings - HardwareHub{% endblock %}
+
+{% block content %}
+<section class="bookings-section">
+    <div class="container">
+        <h1 class="page-title">My Service Bookings</h1>
+        
+        <div class="bookings-list">
+            {% if bookings %}
+                {% for booking in bookings %}
+                <div class="booking-card">
+                    <div class="booking-header">
+                        <span class="booking-id">Booking #{{ booking.booking_number }}</span>
+                        <span class="booking-status status-{{ booking.status }}">{{ booking.status|upper }}</span>
+                    </div>
+                    
+                    <div class="booking-body">
+                        <div class="booking-service">
+                            <h3>{{ booking.service.name }}</h3>
+                            <p class="service-category">{{ booking.service.category }}</p>
+                        </div>
+                        
+                        <div class="booking-details">
+                            <div class="detail-item">
+                                <i class="fas fa-calendar"></i>
+                                <span>{{ booking.preferred_date or 'Not scheduled' }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-clock"></i>
+                                <span>{{ booking.preferred_time or 'Flexible' }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-tag"></i>
+                                <span>₹{{ booking.price }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="booking-meta">
+                            <p><strong>Booked on:</strong> {{ booking.created_at.strftime('%d %b %Y') }}</p>
+                            {% if booking.technician %}
+                            <p><strong>Technician:</strong> {{ booking.technician }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="booking-footer">
+                        <a href="#" class="btn btn-small">View Details</a>
+                        {% if booking.status == 'pending' %}
+                        <a href="#" class="btn btn-small btn-outline">Reschedule</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="no-bookings">
+                <i class="fas fa-calendar-times"></i>
+                <h3>No service bookings yet</h3>
+                <p>You haven't booked any services yet.</p>
+                <a href="{{ url_for('services') }}" class="btn btn-primary">Browse Services</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<style>
+    .bookings-section {
+        padding: 120px 0 80px;
+        background: var(--light-bg);
+        min-height: 80vh;
+    }
+    
+    .bookings-list {
+        max-width: 800px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .booking-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        border: 1px solid #E5E7EB;
+        transition: var(--transition);
+    }
+    
+    .booking-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+    }
+    
+    .booking-header {
+        padding: 1rem 1.5rem;
+        background: #F9FAFB;
+        border-bottom: 1px solid #E5E7EB;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .booking-id {
+        font-weight: 600;
+        color: var(--primary-blue);
+    }
+    
+    .booking-status {
+        padding: 0.3rem 1rem;
+        border-radius: 30px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-pending {
+        background: #FFF3E0;
+        color: #E65100;
+    }
+    
+    .status-confirmed {
+        background: #E3F2FD;
+        color: #1565C0;
+    }
+    
+    .status-in-progress {
+        background: #E8F5E9;
+        color: #2E7D32;
+    }
+    
+    .status-completed {
+        background: #E8F5E9;
+        color: #2E7D32;
+    }
+    
+    .status-cancelled {
+        background: #FFEBEE;
+        color: #C62828;
+    }
+    
+    .booking-body {
+        padding: 1.5rem;
+    }
+    
+    .booking-service h3 {
+        margin-bottom: 0.3rem;
+        color: var(--text-primary);
+    }
+    
+    .service-category {
+        color: var(--primary-blue);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .booking-details {
+        display: flex;
+        gap: 2rem;
+        margin: 1rem 0;
+        padding: 1rem;
+        background: #F9FAFB;
+        border-radius: 5px;
+    }
+    
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-secondary);
+    }
+    
+    .detail-item i {
+        color: var(--primary-blue);
+    }
+    
+    .booking-meta {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    .booking-meta p {
+        margin: 0.2rem 0;
+    }
+    
+    .booking-footer {
+        padding: 1rem 1.5rem;
+        background: #F9FAFB;
+        border-top: 1px solid #E5E7EB;
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .btn-small {
+        padding: 0.5rem 1.5rem;
+        background: var(--primary-blue);
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        transition: var(--transition);
+    }
+    
+    .btn-small:hover {
+        background: var(--secondary-blue);
+    }
+    
+    .btn-outline {
+        background: white;
+        border: 2px solid var(--primary-blue);
+        color: var(--primary-blue);
+    }
+    
+    .btn-outline:hover {
+        background: var(--primary-blue);
+        color: white;
+    }
+    
+    .no-bookings {
+        text-align: center;
+        padding: 4rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+    }
+    
+    .no-bookings i {
+        font-size: 4rem;
+        color: var(--primary-blue);
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .no-bookings h3 {
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .no-bookings p {
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+        .booking-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .booking-details {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .booking-footer {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}

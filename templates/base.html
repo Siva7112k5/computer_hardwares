@@ -21,6 +21,8 @@
                     <li><a href="{{ url_for('cart') }}">Cart <span class="cart-count">0</span></a></li>
                     <li><a href="{{ url_for('orders') }}" {% if request.endpoint == 'orders' %}class="active"{% endif %}>My Orders</a></li>
                     <li><a href="{{ url_for('tracking') }}" {% if request.endpoint == 'tracking' %}class="active"{% endif %}>Track Order</a></li>
+                    <li><a href="{{ url_for('services') }}" {% if request.endpoint == 'services' or request.endpoint == 'service_detail' or request.endpoint == 'book_service' %}class="active"{% endif %}>Services</a></li>
+<li><a href="{{ url_for('support') }}" {% if request.endpoint == 'support' or request.endpoint == 'new_ticket' or request.endpoint == 'my_tickets' %}class="active"{% endif %}>Support</a></li>
                     {% if current_user.is_authenticated and current_user.is_admin %}
                         <li><a href="{{ url_for('admin_dashboard') }}" class="admin-link">Admin</a></li>
                     {% endif %}

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Support Center - HardwareHub{% endblock %}
+
+{% block content %}
+<section class="support-section">
+    <div class="container">
+        <h1 class="page-title">Support Center</h1>
+        
+        <div class="support-grid">
+            <div class="support-card">
+                <i class="fas fa-ticket-alt"></i>
+                <h3>Create Ticket</h3>
+                <p>Need help? Create a support ticket and we'll get back to you within 24 hours.</p>
+                <a href="{{ url_for('new_ticket') }}" class="btn btn-primary">Create Ticket</a>
+            </div>
+            
+            <div class="support-card">
+                <i class="fas fa-history"></i>
+                <h3>My Tickets</h3>
+                <p>View and track all your support tickets and their status.</p>
+                <a href="{{ url_for('my_tickets') }}" class="btn btn-outline">View Tickets</a>
+            </div>
+            
+            <div class="support-card">
+                <i class="fas fa-question-circle"></i>
+                <h3>FAQs</h3>
+                <p>Find answers to commonly asked questions about our products and services.</p>
+                <a href="#faqs" class="btn btn-outline">Browse FAQs</a>
+            </div>
+        </div>
+        
+        <div class="faq-section" id="faqs">
+            <h2 class="section-title">Frequently Asked Questions</h2>
+            
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <h3>What is your warranty policy?</h3>
+                    <p>All products come with manufacturer warranty. We also offer extended warranty plans on select products.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>How long does delivery take?</h3>
+                    <p>Standard delivery takes 3-5 business days. Express shipping is available at checkout.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>Do you offer installation services?</h3>
+                    <p>Yes, we offer professional installation services for all PC components. Check our Services page for details.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>What payment methods do you accept?</h3>
+                    <p>We accept all major credit cards, UPI, net banking, and COD on eligible orders.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .support-section {
+        padding: 120px 0 80px;
+        background: var(--light-bg);
+    }
+    
+    .support-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin: 3rem 0;
+    }
+    
+    .support-card {
+        background: white;
+        padding: 3rem 2rem;
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+        text-align: center;
+        border: 1px solid #E5E7EB;
+        transition: var(--transition);
+    }
+    
+    .support-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+        border-color: var(--primary-blue);
+    }
+    
+    .support-card i {
+        font-size: 3.5rem;
+        color: var(--primary-blue);
+        margin-bottom: 1.5rem;
+    }
+    
+    .support-card h3 {
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        font-size: 1.3rem;
+    }
+    
+    .support-card p {
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+    
+    .faq-section {
+        margin-top: 4rem;
+    }
+    
+    .faq-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .faq-item {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        border-left: 4px solid var(--primary-blue);
+    }
+    
+    .faq-item h3 {
+        color: var(--text-primary);
+        margin-bottom: 0.8rem;
+        font-size: 1.1rem;
+    }
+    
+    .faq-item p {
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+    
+    @media (max-width: 768px) {
+        .faq-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}Ticket #{{ ticket.ticket_number }} - HardwareHub{% endblock %}
+
+{% block content %}
+<section class="ticket-detail-section">
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="{{ url_for('index') }}">Home</a> &gt;
+            <a href="{{ url_for('support') }}">Support</a> &gt;
+            <a href="{{ url_for('my_tickets') }}">My Tickets</a> &gt;
+            <span>Ticket #{{ ticket.ticket_number }}</span>
+        </div>
+        
+        <div class="ticket-detail-container">
+            <div class="ticket-header">
+                <div>
+                    <h1>Ticket #{{ ticket.ticket_number }}</h1>
+                    <div class="ticket-meta">
+                        <span class="ticket-status status-{{ ticket.status }}">{{ ticket.status|upper }}</span>
+                        <span class="ticket-priority priority-{{ ticket.priority }}">{{ ticket.priority|upper }}</span>
+                        <span class="ticket-category">{{ ticket.category }}</span>
+                    </div>
+                </div>
+                <div class="ticket-date">
+                    Created: {{ ticket.created_at.strftime('%d %b %Y, %I:%M %p') }}
+                </div>
+            </div>
+            
+            <div class="ticket-messages">
+                <!-- Original Message -->
+                <div class="message original">
+                    <div class="message-header">
+                        <div class="user-info">
+                            <i class="fas fa-user-circle"></i>
+                            <span class="user-name">{{ ticket.user.username }}</span>
+                            <span class="user-badge">Customer</span>
+                        </div>
+                        <span class="message-time">{{ ticket.created_at.strftime('%d %b %Y, %I:%M %p') }}</span>
+                    </div>
+                    <div class="message-content">
+                        <h3>{{ ticket.subject }}</h3>
+                        <p>{{ ticket.message }}</p>
+                        {% if ticket.attachment %}
+                        <div class="attachment">
+                            <i class="fas fa-paperclip"></i>
+                            <a href="{{ url_for('static', filename='uploads/tickets/' + ticket.attachment) }}" target="_blank">
+                                View Attachment
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Replies -->
+                {% for reply in ticket.replies %}
+                <div class="message {% if reply.is_staff %}staff{% endif %}">
+                    <div class="message-header">
+                        <div class="user-info">
+                            <i class="fas fa-user-circle"></i>
+                            <span class="user-name">{{ reply.user.username }}</span>
+                            {% if reply.is_staff %}
+                            <span class="user-badge staff">Staff</span>
+                            {% endif %}
+                        </div>
+                        <span class="message-time">{{ reply.created_at.strftime('%d %b %Y, %I:%M %p') }}</span>
+                    </div>
+                    <div class="message-content">
+                        <p>{{ reply.message }}</p>
+                        {% if reply.attachment %}
+                        <div class="attachment">
+                            <i class="fas fa-paperclip"></i>
+                            <a href="#">View Attachment</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% if ticket.status != 'closed' and ticket.status != 'resolved' %}
+            <div class="reply-form">
+                <h3>Add Reply</h3>
+                <form method="POST">
+                    <div class="form-group">
+                        <textarea name="message" rows="4" required placeholder="Type your reply here..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-reply"></i> Post Reply
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {% else %}
+            <div class="ticket-closed">
+                <i class="fas fa-check-circle"></i>
+                <p>This ticket is closed. Thank you for contacting us!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<style>
+    .ticket-detail-section {
+        padding: 120px 0 60px;
+        background: var(--light-bg);
+        min-height: 100vh;
+    }
+    
+    .ticket-detail-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+    
+    .ticket-header {
+        padding: 2rem;
+        background: linear-gradient(135deg, var(--primary-blue), var(--accent-cyan));
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .ticket-header h1 {
+        color: white;
+        margin-bottom: 0.5rem;
+        font-size: 1.5rem;
+    }
+    
+    .ticket-meta {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .ticket-status,
+    .ticket-priority,
+    .ticket-category {
+        padding: 0.3rem 1rem;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: rgba(255,255,255,0.2);
+        color: white;
+    }
+    
+    .ticket-date {
+        color: rgba(255,255,255,0.9);
+        font-size: 0.9rem;
+    }
+    
+    .ticket-messages {
+        padding: 2rem;
+    }
+    
+    .message {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: #F9FAFB;
+        border-radius: 8px;
+        border-left: 4px solid var(--primary-blue);
+    }
+    
+    .message.staff {
+        border-left-color: var(--success-green);
+        background: #F0F9F0;
+    }
+    
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #E5E7EB;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .user-info i {
+        font-size: 1.5rem;
+        color: var(--primary-blue);
+    }
+    
+    .user-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .user-badge {
+        padding: 0.2rem 0.5rem;
+        background: #E5E7EB;
+        border-radius: 3px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    
+    .user-badge.staff {
+        background: var(--success-green);
+        color: white;
+    }
+    
+    .message-time {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+    
+    .message-content h3 {
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+    
+    .message-content p {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+    
+    .attachment {
+        margin-top: 1rem;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .attachment i {
+        color: var(--primary-blue);
+    }
+    
+    .attachment a {
+        color: var(--primary-blue);
+        text-decoration: none;
+    }
+    
+    .attachment a:hover {
+        text-decoration: underline;
+    }
+    
+    .reply-form {
+        padding: 2rem;
+        border-top: 1px solid #E5E7EB;
+        background: #F9FAFB;
+    }
+    
+    .reply-form h3 {
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+    
+    .form-group textarea {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid #E5E7EB;
+        border-radius: 5px;
+        font-size: 0.95rem;
+        transition: var(--transition);
+        resize: vertical;
+    }
+    
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+    }
+    
+    .form-actions {
+        margin-top: 1rem;
+    }
+    
+    .ticket-closed {
+        padding: 3rem;
+        text-align: center;
+        background: #F9FAFB;
+        border-top: 1px solid #E5E7EB;
+    }
+    
+    .ticket-closed i {
+        font-size: 3rem;
+        color: var(--success-green);
+        margin-bottom: 1rem;
+    }
+    
+    .ticket-closed p {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .ticket-header {
+            flex-direction: column;
+        }
+        
+        .message-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .ticket-messages {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}

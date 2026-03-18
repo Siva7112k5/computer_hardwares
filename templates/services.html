@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+
+{% block title %}PC Services - HardwareHub{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1>PC Services & Support</h1>
+        <p>Professional repair, maintenance, and consultation services</p>
+    </div>
+</section>
+
+<section class="services-filter">
+    <div class="container">
+        <div class="filter-section">
+            <div class="filter-group">
+                <h4>Service Category</h4>
+                <select id="categoryFilter" onchange="applyFilter()">
+                    <option value="all">All Services</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}" {% if category == selected_category %}selected{% endif %}>{{ category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="services-grid">
+    <div class="container">
+        <div class="services-list">
+            {% if services %}
+                {% for service in services %}
+                <div class="service-card" data-category="{{ service.category }}">
+                    <div class="service-image">
+                        <img src="{{ url_for('static', filename='img/services/' + service.image) if service.image else 'https://via.placeholder.com/400x250?text=PC+Service' }}" 
+                             alt="{{ service.name }}"
+                             onerror="this.src='https://via.placeholder.com/400x250?text=PC+Service'">
+                        {% if service.featured %}
+                        <span class="featured-badge">Featured</span>
+                        {% endif %}
+                    </div>
+                    <div class="service-content">
+                        <h3>{{ service.name }}</h3>
+                        <span class="service-category">{{ service.category }}</span>
+                        <p class="service-description">{{ service.description[:150] }}...</p>
+                        
+                        <div class="service-details">
+                            <div class="detail-item">
+                                <i class="fas fa-clock"></i>
+                                <span>{{ service.duration }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-tag"></i>
+                                <span>₹{{ service.price }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="service-includes">
+                            <h4>What's included:</h4>
+                            <p>{{ service.includes[:100] }}...</p>
+                        </div>
+                        
+                        <div class="service-actions">
+                            <a href="{{ url_for('service_detail', service_id=service.id) }}" class="btn btn-outline">View Details</a>
+                            <a href="{{ url_for('book_service', service_id=service.id) }}" class="btn btn-primary">Book Now</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-services">
+                    <i class="fas fa-tools"></i>
+                    <h3>No services available</h3>
+                    <p>Check back soon for our service offerings.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="service-features">
+    <div class="container">
+        <h2 class="section-title">Why Choose Our Services</h2>
+        <div class="features-grid">
+            <div class="feature-item">
+                <i class="fas fa-certificate"></i>
+                <h3>Certified Technicians</h3>
+                <p>All our technicians are certified and experienced</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Warranty on Services</h3>
+                <p>30-day warranty on all repair services</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-clock"></i>
+                <h3>Quick Turnaround</h3>
+                <p>Most repairs completed within 24-48 hours</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-home"></i>
+                <h3>On-site Support</h3>
+                <p>Available for businesses and home users</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    function applyFilter() {
+        const category = document.getElementById('categoryFilter').value;
+        window.location.href = "{{ url_for('services') }}?category=" + encodeURIComponent(category);
+    }
+</script>
+
+<style>
+    .services-filter {
+        padding: 2rem 0;
+        background: white;
+        box-shadow: var(--shadow);
+        margin-bottom: 2rem;
+    }
+    
+    .filter-section {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
+    .services-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0 4rem;
+    }
+    
+    .service-card {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        border: 1px solid #E5E7EB;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+        border-color: var(--primary-blue);
+    }
+    
+    .service-image {
+        height: 200px;
+        overflow: hidden;
+        position: relative;
+        background: #F9FAFB;
+    }
+    
+    .service-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: var(--transition);
+    }
+    
+    .service-card:hover .service-image img {
+        transform: scale(1.05);
+    }
+    
+    .featured-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: linear-gradient(135deg, var(--primary-blue), var(--accent-cyan));
+        color: white;
+        padding: 0.3rem 1rem;
+        border-radius: 25px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        z-index: 2;
+    }
+    
+    .service-content {
+        padding: 1.5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .service-content h3 {
+        font-size: 1.3rem;
+        margin-bottom: 0.3rem;
+        color: var(--text-primary);
+    }
+    
+    .service-category {
+        display: inline-block;
+        background: #E3F2FD;
+        color: var(--primary-blue);
+        padding: 0.2rem 1rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-bottom: 1rem;
+    }
+    
+    .service-description {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+        flex: 1;
+    }
+    
+    .service-details {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    .detail-item i {
+        color: var(--primary-blue);
+    }
+    
+    .service-includes {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: #F9FAFB;
+        border-radius: 5px;
+        border-left: 3px solid var(--primary-blue);
+    }
+    
+    .service-includes h4 {
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+        color: var(--text-primary);
+    }
+    
+    .service-includes p {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+    
+    .service-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: auto;
+    }
+    
+    .service-actions .btn {
+        flex: 1;
+        text-align: center;
+        padding: 0.8rem;
+        font-size: 0.9rem;
+    }
+    
+    .btn-outline {
+        background: transparent;
+        border: 2px solid var(--primary-blue);
+        color: var(--primary-blue);
+    }
+    
+    .btn-outline:hover {
+        background: var(--primary-blue);
+        color: white;
+    }
+    
+    .service-features {
+        padding: 4rem 0;
+        background: linear-gradient(135deg, var(--primary-blue), var(--accent-cyan));
+        color: white;
+    }
+    
+    .service-features .section-title {
+        color: white;
+    }
+    
+    .service-features .section-title::after {
+        background: white;
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .feature-item {
+        text-align: center;
+        padding: 2rem;
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+        transition: var(--transition);
+    }
+    
+    .feature-item:hover {
+        transform: translateY(-5px);
+        background: rgba(255,255,255,0.2);
+    }
+    
+    .feature-item i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .feature-item h3 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .feature-item p {
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+    
+    .no-services {
+        grid-column: 1/-1;
+        text-align: center;
+        padding: 4rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+    }
+    
+    .no-services i {
+        font-size: 4rem;
+        color: var(--primary-blue);
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    @media (max-width: 768px) {
+        .services-list {
+            grid-template-columns: 1fr;
+        }
+        
+        .service-actions {
+            flex-direction: column;
+        }
+        
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

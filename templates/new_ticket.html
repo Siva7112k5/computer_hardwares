@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Create Support Ticket - HardwareHub{% endblock %}
+
+{% block content %}
+<section class="ticket-section">
+    <div class="container">
+        <div class="ticket-container">
+            <h1 class="page-title">Create Support Ticket</h1>
+            <p class="subtitle">Need help? Submit a ticket and we'll get back to you within 24 hours.</p>
+            
+            <form method="POST" enctype="multipart/form-data" class="ticket-form">
+                <div class="form-group">
+                    <label for="subject">
+                        <i class="fas fa-heading"></i> Subject *
+                    </label>
+                    <input type="text" id="subject" name="subject" required 
+                           placeholder="Brief summary of your issue">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">
+                            <i class="fas fa-tag"></i> Category *
+                        </label>
+                        <select id="category" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="Technical">Technical Support</option>
+                            <option value="Billing">Billing & Payment</option>
+                            <option value="Product">Product Inquiry</option>
+                            <option value="Warranty">Warranty Claim</option>
+                            <option value="Return">Return & Refund</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="priority">
+                            <i class="fas fa-exclamation-triangle"></i> Priority
+                        </label>
+                        <select id="priority" name="priority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">
+                        <i class="fas fa-comment"></i> Message *
+                    </label>
+                    <textarea id="message" name="message" rows="6" required 
+                              placeholder="Please describe your issue in detail..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="attachment">
+                        <i class="fas fa-paperclip"></i> Attachment (optional)
+                    </label>
+                    <input type="file" id="attachment" name="attachment" accept="image/*,.pdf,.doc,.docx">
+                    <small class="form-text">Max file size: 16MB. Allowed: Images, PDF, DOC</small>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-large">
+                        <i class="fas fa-paper-plane"></i> Submit Ticket
+                    </button>
+                    <a href="{{ url_for('support') }}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<style>
+    .ticket-section {
+        padding: 120px 0 80px;
+        background: var(--light-bg);
+        min-height: 80vh;
+    }
+    
+    .ticket-container {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    
+    .ticket-form {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+        margin-top: 2rem;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+    
+    .form-group label i {
+        color: var(--primary-blue);
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border: 2px solid #E5E7EB;
+        border-radius: 5px;
+        font-size: 0.95rem;
+        transition: var(--transition);
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+    }
+    
+    .form-group input[type="file"] {
+        padding: 0.5rem;
+        border: 2px dashed var(--primary-blue);
+        background: #F0F7FF;
+        cursor: pointer;
+    }
+    
+    .form-text {
+        display: block;
+        margin-top: 0.3rem;
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-large {
+        flex: 2;
+        padding: 1rem;
+        font-size: 1.1rem;
+    }
+    
+    .btn-outline {
+        flex: 1;
+        background: white;
+        border: 2px solid var(--primary-blue);
+        color: var(--primary-blue);
+        text-align: center;
+        text-decoration: none;
+        padding: 0.8rem;
+        border-radius: 5px;
+        transition: var(--transition);
+    }
+    
+    .btn-outline:hover {
+        background: var(--primary-blue);
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .ticket-form {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
