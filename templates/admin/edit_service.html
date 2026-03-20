@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Service - HardwareHub Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    {% include 'admin/sidebar.html' %}
+    
+    <main class="admin-main">
+        <div class="admin-top-bar">
+            <h2>Edit Service: {{ service.name }}</h2>
+            <a href="{{ url_for('admin_services') }}" class="admin-btn admin-btn-primary">
+                <i class="fas fa-arrow-left"></i> Back to Services
+            </a>
+        </div>
+        
+        <form class="admin-form" method="POST" enctype="multipart/form-data">
+            <div class="admin-form-group">
+                <label for="name">Service Name *</label>
+                <input type="text" id="name" name="name" value="{{ service.name }}" required placeholder="e.g., PC Diagnostic & Repair">
+            </div>
+            
+            <div class="admin-form-row">
+                <div class="admin-form-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select Category</option>
+                        <option value="Repair" {% if service.category == 'Repair' %}selected{% endif %}>Repair</option>
+                        <option value="Installation" {% if service.category == 'Installation' %}selected{% endif %}>Installation</option>
+                        <option value="Consultation" {% if service.category == 'Consultation' %}selected{% endif %}>Consultation</option>
+                        <option value="Maintenance" {% if service.category == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+                        <option value="Data Recovery" {% if service.category == 'Data Recovery' %}selected{% endif %}>Data Recovery</option>
+                        <option value="Other" {% if service.category == 'Other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                
+                <div class="admin-form-group">
+                    <label for="price">Price (₹) *</label>
+                    <input type="number" id="price" name="price" value="{{ service.price }}" required min="0" step="1">
+                </div>
+            </div>
+            
+            <div class="admin-form-row">
+                <div class="admin-form-group">
+                    <label for="duration">Duration</label>
+                    <input type="text" id="duration" name="duration" value="{{ service.duration or '' }}" placeholder="e.g., 2-3 hours, Same day">
+                </div>
+                
+                <div class="admin-form-group">
+                    <label>
+                        <input type="checkbox" name="featured" {% if service.featured %}checked{% endif %}> Featured Service
+                    </label>
+                </div>
+            </div>
+            
+            <div class="admin-form-group">
+                <label for="description">Description *</label>
+                <textarea id="description" name="description" rows="4" required placeholder="Detailed description of the service...">{{ service.description }}</textarea>
+            </div>
+            
+            <div class="admin-form-group">
+                <label for="includes">What's Included</label>
+                <textarea id="includes" name="includes" rows="3" placeholder="List what's included (comma separated)">{{ service.includes or '' }}</textarea>
+                <small class="form-text">Separate items with commas</small>
+            </div>
+            
+            <div class="admin-form-group">
+                <label>Service Image</label>
+                <div class="image-upload-container" onclick="document.getElementById('imageInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Click to upload new image (leave empty to keep current)</p>
+                    <p style="font-size: 0.8rem; color: #7f8c8d;">Recommended size: 600x400px</p>
+                </div>
+                <input type="file" id="imageInput" name="image" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                
+                {% if service.image %}
+                <div class="image-preview" id="imagePreview" style="display: block;">
+                    <img src="{{ url_for('static', filename='img/services/' + service.image) }}" alt="{{ service.name }}">
+                    <p style="font-size: 0.8rem; color: #7f8c8d; margin-top: 0.5rem;">Current Image</p>
+                </div>
+                {% else %}
+                <div class="image-preview" id="imagePreview">
+                    <img src="" alt="Preview">
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="admin-form-actions">
+                <button type="submit" class="admin-btn admin-btn-success">
+                    <i class="fas fa-save"></i> Update Service
+                </button>
+                <a href="{{ url_for('admin_services') }}" class="admin-btn admin-btn-primary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </main>
+</div>
+
+<script>
+    function previewImage(input) {
+        const preview = document.getElementById('imagePreview');
+        const previewImg = preview.querySelector('img');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+
+<style>
+    .form-text {
+        display: block;
+        margin-top: 0.3rem;
+        color: #7f8c8d;
+        font-size: 0.8rem;
+    }
+    
+    .image-preview {
+        max-width: 300px;
+        margin: 1rem auto;
+        text-align: center;
+    }
+    
+    .image-preview img {
+        width: 100%;
+        border-radius: 8px;
+        border: 3px solid var(--primary-blue);
+    }
+    
+    .image-upload-container {
+        border: 2px dashed var(--primary-blue);
+        padding: 2rem;
+        text-align: center;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #F0F7FF;
+        margin-bottom: 1rem;
+    }
+    
+    .image-upload-container:hover {
+        border-color: var(--accent-cyan);
+        background: white;
+    }
+    
+    .image-upload-container i {
+        font-size: 3rem;
+        color: var(--primary-blue);
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
